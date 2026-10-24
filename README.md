@@ -192,7 +192,7 @@ esp32-c3-adblock/
 ---
 
 ## Fork from
-Được truyền cảm hứng từ dự án [s60sc/ESP32_AdBlocker](https://github.com/s60sc/ESP32_AdBlocker) và tối ưu hóa chuyên sâu cho vi điều khiển kiến trúc RISC-V không PSRAM.
+Được truyền cảm hứng từ dự án [M-Abozaid/esp32-c3-adblock](https://github.com/M-Abozaid/esp32-c3-adblock) và tối ưu hóa chuyên sâu cho vi điều khiển kiến trúc RISC-V không PSRAM.
 
 
 ## 📄 Bản quyền (License)
