@@ -1,0 +1,175 @@
+! =================================================
+! DANH SÁCH NGOẠI LỆ TỐI ƯU BỞI TÁM CÔNG NGHỆ
+! =================================================
+
+! --- 1. CỔNG DỊCH VỤ CÔNG & CHÍNH PHỦ ---
+@@||dichvucong.gov.vn^
+@@||baohiemxahoi.gov.vn^
+@@||thuedientu.gdt.gov.vn^
+@@||canhan.gdt.gov.vn^
+@@||vneid.gov.vn^
+@@||vnpost.vn^
+
+! --- 2. NGÂN HÀNG & TÀI CHÍNH ---
+! Các ngân hàng lớn
+@@||vcb.com.vn^
+@@||vietcombank.com.vn^
+@@||techcombank.com.vn^
+@@||mbbank.com.vn^
+@@||acb.com.vn^
+@@||bidv.com.vn^
+@@||tpb.vn^
+@@||vpbank.com.vn^
+@@||vib.com.vn^
+@@||sacombank.com.vn^
+@@||hdbank.com.vn^
+@@||shb.com.vn^
+@@||liobank.vn^
+! Tổ chức thẻ
+@@||napas.com.vn^
+@@||visa.com^
+@@||digitalcardservice.com^
+
+! --- 3. VÍ ĐIỆN TỬ & CỔNG THANH TOÁN ---
+@@||momo.vn^
+@@||momoapp.vn^
+@@||momocdn.net^
+@@||zalopay.vn^
+@@||vnpay.vn^
+@@||vtcpay.vn^
+@@||viettelmoney.vn^
+@@||viettelpay.vn^
+@@||onepay.vn^
+@@||payoo.vn^
+@@||nganluong.vn^
+@@||smartpay.vn^
+@@||9pay.vn^
+
+! --- 4. MUA SẮM, GIAO HÀNG & GỌI XE ---
+! Sàn TMĐT
+@@||shopee.vn^
+@@||shopee.sg^
+@@||shopeelike.com^
+@@||shopeemobile.com^
+@@||tiki.vn^
+@@||tiki.video^
+@@||lazada.vn^
+@@||laz-img.com^
+! Gọi xe & Đồ ăn
+@@||grab.com^
+@@||grabtaxi.com^
+@@||be.com.vn^
+@@||gojek.com^
+@@||foody.vn^
+@@||shopeefood.vn^
+! Vận chuyển & Quản lý bán hàng
+@@||ghn.vn^
+@@||ghtk.vn^
+@@||viettelpost.com.vn^
+
+! --- 5. MẠNG XÃ HỘI & NHẮN TIN ---
+! Facebook & Instagram
+@@||facebook.com^
+@@||fbcdn.net^
+@@||fbsbx.com^
+@@||messenger.com^
+@@||instagram.com^
+@@||cdninstagram.com^
+! Zalo
+@@||zalo.me^
+@@||chat.zalo.me^
+@@||zadn.vn^
+@@||zdn.vn^
+! TikTok
+@@||tiktok.com^
+@@||tiktokcdn.com^
+@@||tiktokv.com^
+@@||tiktokrow-cdn.com^
+! Khác
+@@||locketcamera.com^
+
+! --- 6. GOOGLE & YOUTUBE ---
+@@||google.com^
+@@||gmail.com^
+@@||youtube.com^
+@@||googlevideo.com^
+@@||ytimg.com^
+@@||ggpht.com^
+@@||gstatic.com^
+@@||googleusercontent.com^
+@@||googleapis.com^
+@@||recaptcha.google.com^
+@@||recaptcha.net^
+@@||firebase.googleapis.com^
+@@||googlehosted.com^
+
+! --- 7. APPLE & ICLOUD ---
+@@||apple.com^
+@@||icloud.com^
+@@||itunes.apple.com^
+@@||aaplimg.com^
+@@||mzstatic.com^
+@@||apple-dns.net^
+@@||cdn-apple.com^
+@@||me.com^
+
+! --- 8. MICROSOFT & OFFICE ---
+@@||microsoft.com^
+@@||microsoftonline.com^
+@@||office.com^
+@@||office365.com^
+@@||outlook.com^
+@@||live.com^
+@@||azureedge.net^
+
+! --- 9. TIN TỨC, NHÀ MẠNG & TIỆN ÍCH ---
+@@||vnexpress.net^
+@@||dantri.com.vn^
+@@||tuoitre.vn^
+@@||thanhnien.vn^
+@@||coccoc.com^
+@@||viettel.vn^
+@@||vinaphone.com.vn^
+@@||mobifone.vn^
+@@||fpt.vn^
+@@||chatgpt.com^
+
+! --- 10. HẠ TẦNG MẠNG, CDN & TECH (Tránh lỗi load web) ---
+@@||cloudflare.com^
+@@||cloudflare-dns.com^
+@@||cloudflare.net^
+@@||akamai.net^
+@@||akamaiedge.net^
+@@||akamaihd.net^
+@@||akadns.net^
+@@||fastly.net^
+@@||fastlylb.net^
+@@||fastly-edge.com^
+@@||edgecastcdn.net^
+@@||edgesuite.net^
+@@||cloudfront.net^
+@@||amazonaws.com^
+@@||github.com^
+@@||githubusercontent.com^
+@@||githubassets.com^
+@@||unpkg.com^
+@@||bootstrapcdn.com^
+@@||jquery.com^
+@@||cdnjs.com^
+@@||maxcdn.com^
+@@||jsdelivr.net^
+@@||digicert.com^
+@@||globalsign.com^
+@@||cdn77.org^
+@@||cdn20.com^
+@@||nutscdn.com^
+@@||appsflyersdk.com^
+
+! --- 11. GIẢI TRÍ & KHÁC ---
+@@||netflix.com^
+@@||nflxvideo.net^
+@@||nflxso.net^
+@@||zingplay.me^
+@@||pay.zing.vn^
+@@||protonmail.com^
+@@||piscale.com^

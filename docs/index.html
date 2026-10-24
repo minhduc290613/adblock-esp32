@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C3 AdBlocker — Chặn quảng cáo toàn mạng trên ESP32</title>
+<meta name="description" content="Nạp firmware chặn quảng cáo toàn mạng cho vi điều khiển ESP32 ($2) trực tiếp từ trình duyệt web. Không cần cài PlatformIO hay toolchain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #090d14;
+    --card-bg: rgba(18, 24, 38, 0.75);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover: rgba(255, 255, 255, 0.14);
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-sub: #64748b;
+    --primary: #10b981;
+    --primary-glow: rgba(16, 185, 129, 0.35);
+    --primary-dim: rgba(16, 185, 129, 0.12);
+    --cyan: #06b6d4;
+    --cyan-glow: rgba(6, 182, 212, 0.35);
+    --gold: #f59e0b;
+    --red: #f43f5e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Ambient glowing background */
+  .bg-glow-1 {
+    position: fixed;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(16, 185, 129, 0.18) 0%, rgba(6, 182, 212, 0.08) 45%, transparent 70%);
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: pulseAmbient 8s ease-in-out infinite alternate;
+  }
+  .bg-glow-2 {
+    position: fixed;
+    bottom: -150px;
+    right: 5%;
+    width: 600px;
+    height: 450px;
+    background: radial-gradient(ellipse, rgba(139, 92, 246, 0.12) 0%, rgba(16, 185, 129, 0.06) 50%, transparent 70%);
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes pulseAmbient {
+    0% { transform: translateX(-50%) scale(0.95); opacity: 0.8; }
+    100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 24px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Top Navigation Bar */
+  .top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 40px;
+  }
+  .logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #fff;
+  }
+  .logo-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    box-shadow: 0 4px 16px var(--primary-glow);
+    animation: floatSlow 4s ease-in-out infinite;
+  }
+  .logo-group h2 {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo-group span {
+    color: var(--primary);
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .lang-toggle {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2px;
+  }
+  .lang-btn {
+    background: transparent;
+    border: 0;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .lang-btn.active {
+    background: var(--primary);
+    color: #000;
+    box-shadow: 0 2px 8px var(--primary-glow);
+  }
+  .github-star-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .github-star-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Hero Section */
+  .hero-badge-wrap {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary-dim);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #34d399;
+    letter-spacing: 0.3px;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+  .hero-badge .ping-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
+    animation: pingDot 2s infinite;
+  }
+  @keyframes pingDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+  }
+
+  .hero-title {
+    font-size: clamp(30px, 5.5vw, 48px);
+    font-weight: 800;
+    line-height: 1.18;
+    text-align: center;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #34d399 0%, #06b6d4 50%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .price-highlight {
+    color: var(--gold);
+    display: inline-block;
+  }
+  .hero-sub {
+    font-size: clamp(15px, 2vw, 17px);
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 36px;
+  }
+
+  /* Flash Card with glowing border */
+  .flash-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 20px;
+    padding: 38px 28px;
+    margin-bottom: 30px;
+    text-align: center;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35), 0 0 30px rgba(16, 185, 129, 0.08);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+  }
+  .flash-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #10b981, #06b6d4, transparent);
+    animation: scanline 4s linear infinite;
+  }
+  @keyframes scanline {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  .flash-prompt {
+    font-size: 15px;
+    color: var(--text-main);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  .flash-prompt b {
+    color: var(--primary);
+  }
+
+  /* esp-web-install-button styling */
+  esp-web-install-button {
+    --esp-tools-button-color: #000;
+    --esp-tools-button-background-color: #10b981;
+    --esp-tools-button-border-radius: 12px;
+    display: inline-block;
+  }
+  esp-web-install-button[install-unsupported] { display: none; }
+  .unsupported {
+    display: none;
+    color: var(--red);
+    font-size: 14px;
+    margin-top: 14px;
+    padding: 10px 16px;
+    background: rgba(244, 63, 94, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+  }
+  esp-web-install-button[install-unsupported] ~ .unsupported { display: block; }
+
+  .custom-install-btn {
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 16px 36px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #000;
+    cursor: pointer;
+    box-shadow: 0 4px 20px var(--primary-glow);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .custom-install-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  }
+  .custom-install-btn:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  .badge-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  .badge-pill {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .badge-pill.green {
+    border-color: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+  }
+
+  /* Grid Features */
+  .section-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .section-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 34px;
+  }
+  .feat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 22px;
+    backdrop-filter: blur(14px);
+    transition: all 0.25s ease;
+  }
+  .feat-card:hover {
+    border-color: var(--card-hover);
+    transform: translateY(-3px);
+    background: rgba(24, 32, 50, 0.85);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  }
+  .feat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    margin-bottom: 14px;
+    border: 1px solid var(--card-border);
+  }
+  .feat-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text-main);
+  }
+  .feat-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Steps Section */
+  .glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(14px);
+  }
+  .step-list {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+    list-style: none;
+  }
+  .step-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    font-weight: 800;
+    font-size: 14px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .step-body {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .step-body b {
+    color: var(--text-main);
+  }
+  code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #38bdf8;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Press / Featured */
+  .press-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .press-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .press-badge:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    color: #fff;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .footer-credit b {
+    color: var(--text-main);
+  }
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .foot-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .foot-link-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+  .sponsor-btn {
+    color: #fb7185;
+    border-color: rgba(244, 63, 94, 0.3);
+    background: rgba(244, 63, 94, 0.08);
+  }
+  .sponsor-btn:hover {
+    background: rgba(244, 63, 94, 0.18);
+    border-color: rgba(244, 63, 94, 0.5);
+    color: #fff;
+  }
+
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  @media(max-width: 680px) {
+    .wrap { padding: 20px 16px 80px; }
+    .flash-card { padding: 26px 18px; }
+    .footer { flex-direction: column; align-items: flex-start; }
+    .footer-actions { width: 100%; flex-wrap: wrap; }
+    .custom-install-btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+
+<div class="wrap">
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <a href="./" class="logo-group">
+      <div class="logo-icon">🛡️</div>
+      <h2>C3 <span>AdBlocker</span></h2>
+    </a>
+    <div class="nav-right">
+      <div class="lang-toggle" id="langSwitch">
+        <button type="button" class="lang-btn active" data-lang="vi">VI</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <a href="https://github.com/minhduc290613/adblock-esp32" target="_blank" rel="noopener" class="github-star-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="hero-badge-wrap">
+    <div class="hero-badge">
+      <span class="ping-dot"></span>
+      <span data-i18n="badge_text">Mã nguồn mở · 141.000+ Tên miền chặn · Không cần PSRAM</span>
+    </div>
+  </div>
+
+  <h1 class="hero-title" data-i18n-html="hero_title">
+    Chặn quảng cáo toàn mạng<br>với vi điều khiển <span class="price-highlight">$2</span> ESP32
+  </h1>
+  <p class="hero-sub" data-i18n="hero_sub">
+    Biến chiếc ESP32 siêu nhỏ thành DNS Sinkhole bảo vệ toàn bộ điện thoại, Smart TV, máy tính. Nạp firmware trực tiếp ngay trong trình duyệt web — không cần cài đặt phần mềm hay nạp lệnh phức tạp.
+  </p>
+
+  <!-- Web Serial Flashing Card -->
+  <div class="flash-card">
+    <p class="flash-prompt" data-i18n-html="flash_prompt">
+      Cắm cáp <b>ESP32</b> vào cổng USB máy tính, sau đó:
+    </p>
+
+    <esp-web-install-button manifest="./manifest.json">
+      <button slot="activate" class="custom-install-btn">
+        <span>⚡</span> <span data-i18n="btn_install">Kết nối &amp; Cài đặt Firmware</span>
+      </button>
+      <span slot="unsupported" class="unsupported" data-i18n="err_unsupported">
+        Trình duyệt của bạn không hỗ trợ Web Serial. Hãy mở trang này bằng <b>Google Chrome</b> hoặc <b>Microsoft Edge</b> trên máy tính (Windows / Mac / Linux).
+      </span>
+      <span slot="not-allowed" class="unsupported" data-i18n="err_denied">
+        Bạn cần cấp quyền truy cập cổng kết nối Serial (USB).
+      </span>
+    </esp-web-install-button>
+
+    <div class="badge-pills">
+      <span class="badge-pill green">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        <span data-i18n="tag_browser">Chrome / Edge / Opera (Desktop)</span>
+      </span>
+      <span class="badge-pill">⏱️ <span data-i18n="tag_time">Thời gian nạp ~30 giây</span></span>
+      <span class="badge-pill">📦 <span data-i18n="tag_list">Đã nén sẵn blocklist 141k domain</span></span>
+      <span class="badge-pill">🔒 <span data-i18n="tag_privacy">Wi-Fi cài đặt riêng tư trên thiết bị</span></span>
+    </div>
+  </div>
+
+  <!-- Features Grid -->
+  <h2 class="section-title">
+    <span>✨</span> <span data-i18n="features_title">Điểm đột phá &amp; Tính năng cốt lõi</span>
+  </h2>
+  <p class="section-sub" data-i18n="features_sub">Tối ưu hóa kiến trúc nhị phân 40-bit FNV-1a hash trực tiếp trên bộ nhớ Flash.</p>
+
+  <div class="grid-cards">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title" data-i18n="f1_title">141.000+ Tên miền chặn</div>
+      <div class="feat-desc" data-i18n="f1_desc">Tự động chặn quảng cáo, mã theo dõi, popup độc hại cho toàn bộ thiết bị trong nhà (iPhone, Android, Smart TV, PC).</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧠</div>
+      <div class="feat-title" data-i18n="f2_title">Không cần PSRAM</div>
+      <div class="feat-desc" data-i18n="f2_desc">Chạy mượt mà trên bo mạch ESP32-C3 SuperMini giá chỉ ~50k-70k ($2). Tiêu thụ siêu ít RAM (chỉ ~50-80 KB RAM).</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚀</div>
+      <div class="feat-title" data-i18n="f3_title">Phản hồi siêu tốc ~10ms</div>
+      <div class="feat-desc" data-i18n="f3_desc">Tra cứu nhị phân 2 cấp trên bộ nhớ Flash kết hợp bộ nhớ đệm Cache 256 mục, tốc độ phân giải nhanh tương đương Pi-hole.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🇻🇳</div>
+      <div class="feat-title" data-i18n="f4_title">Whitelist Việt Nam chuẩn hóa</div>
+      <div class="feat-desc" data-i18n="f4_desc">Tích hợp danh sách ngoại lệ bởi Tám Công Nghệ cho VNeID, dịch vụ công, cổng thuế, các ngân hàng và ví điện tử MoMo, ZaloPay.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌐</div>
+      <div class="feat-title" data-i18n="f5_title">Dashboard Song ngữ (VI/EN)</div>
+      <div class="feat-desc" data-i18n="f5_desc">Trang quản trị tại c3adblock.local: xem truy vấn trực tiếp, thống kê từng IP, chặn thiết bị, quét Wi-Fi và cập nhật từ xa.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔄</div>
+      <div class="feat-title" data-i18n="f6_title">Dual-OTA an toàn</div>
+      <div class="feat-desc" data-i18n="f6_desc">Cập nhật firmware và danh sách chặn qua Wi-Fi. Phân vùng kép Dual-OTA chống brick thiết bị tuyệt đối.</div>
+    </div>
+  </div>
+
+  <!-- How It Works Step-by-Step -->
+  <div class="glass-card">
+    <h2 class="section-title">
+      <span>🚀</span> <span data-i18n="steps_title">Chỉ 4 bước để kích hoạt</span>
+    </h2>
+    <ol class="step-list">
+      <li class="step-item">
+        <span class="step-num">1</span>
+        <div class="step-body" data-i18n-html="step1_desc">
+          Bấm nút <b>Kết nối &amp; Cài đặt</b> ở trên và chọn cổng Serial (COM port) của chiếc ESP32.
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">2</span>
+        <div class="step-body" data-i18n-html="step2_desc">
+          Trình duyệt tự động nạp firmware + 141.000 tên miền danh sách chặn trong khoảng 30 giây.
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">3</span>
+        <div class="step-body" data-i18n-html="step3_desc">
+          Sau khi khởi động lại, thiết bị phát mạng Wi-Fi tên <code>C3-AdBlock-XXXX</code>. Kết nối vào đó để chọn Wi-Fi nhà bạn và nhập mật khẩu.
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">4</span>
+        <div class="step-body" data-i18n-html="step4_desc">
+          Đổi địa chỉ DNS trên Router Wi-Fi (hoặc từng máy) trỏ về địa chỉ IP của ESP32. Truy cập trang quản trị tại <code>c3adblock.local</code>.
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Media Mentions -->
+  <div class="glass-card">
+    <h2 class="section-title">
+      <span>📰</span> <span data-i18n="press_title">Dự án được giới thiệu trên báo chí công nghệ</span>
+    </h2>
+    <div class="press-row">
+      <a href="https://www.tomshardware.com/networking/clever-hacker-fits-537-000-domains-in-a-tiny-usd5-esp32-ad-blocking-dongle-firmware-uses-only-around-50kb-of-ram-and-can-answer-blocked-lookups-in-10-milliseconds" target="_blank" rel="noopener" class="press-badge">
+        <span>⚡</span> Tom's Hardware
+      </a>
+      <a href="https://www.xda-developers.com/this-tiny-esp32-powered-gadget-blocks-537000-domains-only-uses-50kb-of-ram/" target="_blank" rel="noopener" class="press-badge">
+        <span>📱</span> XDA Developers
+      </a>
+      <a href="https://korben.info/en/half-million-ad-blocking-domains-50kb-ram-esp32.html" target="_blank" rel="noopener" class="press-badge">
+        <span>🌐</span> Korben (France)
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer with Credit, Sponsor, GitHub -->
+  <footer class="footer">
+    <div class="footer-credit">
+      🛡️ <b>C3 AdBlocker</b> · <span data-i18n="foot_credit">Phát triển bởi <b>Tám Công Nghệ</b> &amp; cộng đồng mã nguồn mở</span> (MIT License).
+    </div>
+    <div class="footer-actions">
+      <a href="https://github.com/minhduc290613/adblock-esp32" target="_blank" rel="noopener" class="foot-link-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub Repository
+      </a>
+      <a href="https://donate.protechvn.io.vn" target="_blank" rel="noopener" class="foot-link-btn sponsor-btn">
+        <span style="color:#f43f5e">♥</span> <span data-i18n="foot_sponsor">Ủng hộ dự án (Sponsor)</span>
+      </a>
+    </div>
+  </footer>
+</div>
+
+<script>
+const DICT = {
+  vi: {
+    badge_text: 'Mã nguồn mở · 141.000+ Tên miền chặn · Không cần PSRAM',
+    hero_title: 'Chặn quảng cáo toàn mạng<br>với vi điều khiển <span class="price-highlight">$2</span> ESP32',
+    hero_sub: 'Biến chiếc ESP32 siêu nhỏ thành DNS Sinkhole bảo vệ toàn bộ điện thoại, Smart TV, máy tính. Nạp firmware trực tiếp ngay trong trình duyệt web — không cần cài đặt phần mềm hay nạp lệnh phức tạp.',
+    flash_prompt: 'Cắm cáp <b>ESP32</b> vào cổng USB máy tính, sau đó:',
+    btn_install: 'Kết nối & Cài đặt Firmware',
+    err_unsupported: 'Trình duyệt của bạn không hỗ trợ Web Serial. Hãy mở trang này bằng Google Chrome hoặc Microsoft Edge trên máy tính (Windows / Mac / Linux).',
+    err_denied: 'Bạn cần cấp quyền truy cập cổng kết nối Serial (USB).',
+    tag_browser: 'Chrome / Edge / Opera (Desktop)',
+    tag_time: 'Thời gian nạp ~30 giây',
+    tag_list: 'Đã nén sẵn blocklist 141k domain',
+    tag_privacy: 'Wi-Fi cài đặt riêng tư trên thiết bị',
+    features_title: 'Điểm đột phá & Tính năng cốt lõi',
+    features_sub: 'Tối ưu hóa kiến trúc nhị phân 40-bit FNV-1a hash trực tiếp trên bộ nhớ Flash.',
+    f1_title: '141.000+ Tên miền chặn',
+    f1_desc: 'Tự động chặn quảng cáo, mã theo dõi, popup độc hại cho toàn bộ thiết bị trong nhà (iPhone, Android, Smart TV, PC).',
+    f2_title: 'Không cần PSRAM',
+    f2_desc: 'Chạy mượt mà trên bo mạch ESP32-C3 SuperMini giá chỉ ~50k-70k ($2). Tiêu thụ siêu ít RAM (chỉ ~50-80 KB RAM).',
+    f3_title: 'Phản hồi siêu tốc ~10ms',
+    f3_desc: 'Tra cứu nhị phân 2 cấp trên bộ nhớ Flash kết hợp bộ nhớ đệm Cache 256 mục, tốc độ phân giải nhanh tương đương Pi-hole.',
+    f4_title: 'Whitelist Việt Nam chuẩn hóa',
+    f4_desc: 'Tích hợp danh sách ngoại lệ bởi Tám Công Nghệ cho VNeID, dịch vụ công, cổng thuế, các ngân hàng và ví điện tử MoMo, ZaloPay.',
+    f5_title: 'Dashboard Song ngữ (VI/EN)',
+    f5_desc: 'Trang quản trị tại c3adblock.local: xem truy vấn trực tiếp, thống kê từng IP, chặn thiết bị, quét Wi-Fi và cập nhật từ xa.',
+    f6_title: 'Dual-OTA an toàn',
+    f6_desc: 'Cập nhật firmware và danh sách chặn qua Wi-Fi. Phân vùng kép Dual-OTA chống brick thiết bị tuyệt đối.',
+    steps_title: 'Chỉ 4 bước để kích hoạt',
+    step1_desc: 'Bấm nút <b>Kết nối &amp; Cài đặt</b> ở trên và chọn cổng Serial (COM port) của chiếc ESP32.',
+    step2_desc: 'Trình duyệt tự động nạp firmware + 141.000 tên miền danh sách chặn trong khoảng 30 giây.',
+    step3_desc: 'Sau khi khởi động lại, thiết bị phát mạng Wi-Fi tên <code>C3-AdBlock-XXXX</code>. Kết nối vào đó để chọn Wi-Fi nhà bạn và nhập mật khẩu.',
+    step4_desc: 'Đổi địa chỉ DNS trên Router Wi-Fi (hoặc từng máy) trỏ về địa chỉ IP của ESP32. Truy cập trang quản trị tại <code>c3adblock.local</code>.',
+    press_title: 'Dự án được giới thiệu trên báo chí công nghệ',
+    foot_credit: 'Phát triển bởi <b>Tám Công Nghệ</b> & cộng đồng mã nguồn mở',
+    foot_sponsor: 'Ủng hộ dự án (Sponsor)'
+  },
+  en: {
+    badge_text: 'Open Source · 141,000+ Domains Blocked · Zero PSRAM',
+    hero_title: 'Network-wide Ad Blocker<br>on a <span class="price-highlight">$2</span> ESP32',
+    hero_sub: 'Turn a tiny $2 ESP32 into a lightning-fast DNS Sinkhole protecting your phones, Smart TVs, and PCs. Flash firmware right here in your browser — zero toolchain, zero setup.',
+    flash_prompt: 'Plug your <b>ESP32</b> into this computer, then:',
+    btn_install: 'Connect & Install Firmware',
+    err_unsupported: 'Your browser does not support Web Serial. Please use Google Chrome or Microsoft Edge on a desktop computer.',
+    err_denied: 'You need to grant permission to access the serial port.',
+    tag_browser: 'Chrome / Edge / Opera (Desktop)',
+    tag_time: '~30 seconds install time',
+    tag_list: '141k-domain blocklist included',
+    tag_privacy: 'WiFi configured privately on-device',
+    features_title: 'Key Innovations & Features',
+    features_sub: 'Optimized 40-bit FNV-1a binary search architecture in SPI flash.',
+    f1_title: '141,000+ Domains Blocked',
+    f1_desc: 'Blocks ads, trackers, and malicious domains for all devices on your local network (iOS, Android, Smart TV, PC).',
+    f2_title: 'No PSRAM Required',
+    f2_desc: 'Runs effortlessly on cheap ESP32-C3 SuperMini boards (~$2). Consumes only ~50-80 KB RAM.',
+    f3_title: 'Ultra-low ~10ms Latency',
+    f3_desc: 'Two-level binary search in flash combined with a 256-entry cache, delivering Pi-hole-grade speeds.',
+    f4_title: 'Curated Whitelist',
+    f4_desc: 'Pre-configured whitelist by Tám Công Nghệ preventing false positives for local banks, government portals, and e-wallets.',
+    f5_title: 'Bilingual Web Dashboard',
+    f5_desc: 'Web portal at c3adblock.local: real-time query logs, per-device statistics, ban clients, Wi-Fi scanner, and OTA.',
+    f6_title: 'Safe Dual-OTA Partitions',
+    f6_desc: 'Over-the-air firmware and blocklist updates over Wi-Fi with dual fail-safe app partitions.',
+    steps_title: 'Get Started in 4 Simple Steps',
+    step1_desc: 'Click <b>Connect &amp; Install Firmware</b> above and choose your ESP32 serial port.',
+    step2_desc: 'Browser flashes the firmware and 141,000-domain blocklist in about 30 seconds.',
+    step3_desc: 'After rebooting, connect to Wi-Fi <code>C3-AdBlock-XXXX</code> from your phone to select your home Wi-Fi and save password.',
+    step4_desc: 'Set the ESP32 IP as your router DNS (or per device). Open dashboard at <code>c3adblock.local</code>.',
+    press_title: 'Featured in Tech Media',
+    foot_credit: 'Developed by <b>Tám Công Nghệ</b> & open-source community',
+    foot_sponsor: 'Support Project (Sponsor)'
+  }
+};
+
+let currentLang = localStorage.getItem('c3_docs_lang') || (navigator.language && navigator.language.startsWith('vi') ? 'vi' : 'en');
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('c3_docs_lang', lang);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (DICT[lang] && DICT[lang][k]) el.textContent = DICT[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.dataset.i18nHtml;
+    if (DICT[lang] && DICT[lang][k]) el.innerHTML = DICT[lang][k];
+  });
+}
+
+document.getElementById('langSwitch').onclick = e => {
+  const btn = e.target.closest('.lang-btn');
+  if (btn && btn.dataset.lang) applyLang(btn.dataset.lang);
+};
+
+applyLang(currentLang);
+</script>
+</body>
+</html>

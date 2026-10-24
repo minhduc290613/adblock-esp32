@@ -1,0 +1,853 @@
+<!doctype html><html lang=vi><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>C3 AdBlock</title><style>
+:root{color-scheme:light;--bg:#f4f7f8;--card:#ffffff;--ink:#182c32;--muted:#71838a;--line:#e4ebed;--green:#168b70;--pale:#e8f6f1;--red:#cc4c50;--orange:#b87815;--side:#ffffff;--input:#ffffff;--th:#f8fafb;--code:#edf2f4;--warn-bg:#fff4f2;--warn-line:#f0c9c6;--warn-ink:#923e39;--signal-bg:#e9eeee;--shadow:rgba(24,44,50,0.06)}
+[data-theme="dark"]{color-scheme:dark;--bg:#0d1117;--card:#161b22;--ink:#c9d1d9;--muted:#8b949e;--line:#30363d;--green:#3fb950;--pale:rgba(63,185,80,0.14);--red:#f85149;--orange:#d29922;--side:#11151c;--input:#0d1117;--th:#11161d;--code:#21262d;--warn-bg:rgba(248,81,73,0.1);--warn-line:rgba(248,81,73,0.3);--warn-ink:#ff7b72;--signal-bg:#21262d;--shadow:rgba(0,0,0,0.4)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,-apple-system,"Segoe UI",sans-serif;transition:background .2s,color .2s}
+a{color:inherit;text-decoration:none}button,input,select{font:inherit}button{border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--ink);padding:8px 12px;cursor:pointer}button:hover{border-color:var(--green);background:var(--pale)}button:disabled{opacity:.55;cursor:wait}
+.layout{min-height:100vh}
+.side{position:fixed;inset:0 auto 0 0;width:224px;background:var(--side);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;z-index:90}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 14px}
+.brand-left{display:flex;align-items:center;gap:9px;font-weight:750;font-size:16px}
+.brand-icon{width:32px;height:32px;border-radius:9px;background:var(--pale);display:grid;place-items:center;color:var(--green);font-size:17px}
+.theme-btn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line);border:0;color:var(--ink);padding:0;font-size:12px;cursor:pointer;line-height:1;transition:all .15s}
+.theme-btn:hover{transform:scale(1.1);background:var(--pale);color:var(--green)}
+.lang-switch{display:inline-flex;background:var(--line);border-radius:20px;padding:2px;border:1px solid var(--line)}
+.lang-btn{border:0;border-radius:14px;background:transparent;color:var(--muted);padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;line-height:1}
+.lang-btn:hover{color:var(--ink);background:transparent}
+.lang-btn.active{background:var(--card);color:var(--green);box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+.user-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--line);border-radius:8px;margin-bottom:14px;font-size:12px;gap:6px}
+.user-name{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{padding:3px 8px;font-size:11px;border-radius:6px;background:var(--card);color:var(--red);border-color:var(--warn-line)}
+.logout-btn:hover{background:var(--warn-bg)}
+.login-trigger-btn{padding:4px 9px;font-size:11px}
+.nav-title,.eyebrow{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted)}.nav-title{padding:4px 8px 8px}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav a{display:flex;align-items:center;gap:8px;color:var(--muted);padding:9px 12px;border-radius:7px;transition:all .15s ease}
+.nav a:hover{color:var(--green);background:var(--pale)}
+.nav a.active{color:var(--green);background:var(--pale);font-weight:700;box-shadow:inset 3px 0 0 var(--green)}
+.side-foot{margin-top:auto;padding:12px 6px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.main{max-width:1320px;margin-left:224px;padding:30px 36px 50px}
+.top{scroll-margin-top:25px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:21px}.eyebrow{margin:0 0 5px}.top h1{font-size:25px;margin:0;letter-spacing:-.4px}
+.live{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:13px}.dot{width:9px;height:9px;border-radius:50%;background:#27a77e;box-shadow:0 0 0 4px #e2f4ee}
+.actions{display:flex;gap:8px;align-items:center}.primary{background:var(--green);border-color:var(--green);color:#fff}.primary:hover{opacity:.9;color:#fff}
+.warn{padding:13px 16px;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-ink);border-radius:9px;margin-bottom:16px}
+.hero{display:flex;align-items:center;gap:16px;padding:17px 19px;background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:15px}
+.shield{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--pale);color:var(--green);font-size:21px}
+.hero-copy{flex:1}.hero-copy b{font-size:15px}.hero-copy p{color:var(--muted);font-size:12px;margin:4px 0 0}
+.hero.paused{border-color:var(--orange)}.hero.paused .shield{background:var(--pale);color:var(--orange)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:26px}
+.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:10px}.stat{padding:16px}
+.stat-name{font-size:12px;color:var(--muted)}.stat-value{font-size:23px;font-weight:700;margin-top:8px;letter-spacing:-.4px}.green{color:var(--green)}.red{color:var(--red)}
+.section{scroll-margin-top:25px;margin-top:26px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.section h2{font-size:16px;margin:0}.hint{font-size:12px;color:var(--muted);margin:5px 0 0}
+.panel{overflow:hidden}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);font-size:12px}th{background:var(--th);color:var(--muted);font-size:10px;letter-spacing:.6px;text-transform:uppercase}tr:last-child td{border-bottom:0}
+.empty{padding:18px;color:var(--muted);text-align:center}.badge{display:inline-block;padding:3px 8px;border-radius:99px;background:var(--code);color:var(--muted);font-size:11px}
+.badge.blocked{background:var(--warn-bg);color:var(--red)}.badge.allowed{background:var(--pale);color:var(--green)}.muted{color:var(--muted)}
+.form-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px}
+.field{min-width:0;border:1px solid var(--line);border-radius:7px;background:var(--input);color:var(--ink);padding:9px 10px}.field:focus{outline:2px solid var(--green);border-color:var(--green)}input[type=file]{max-width:100%;font-size:12px}.field-grow{flex:1;min-width:190px}
+.domain{font-weight:600}.network-name{font-weight:650}.signal{width:90px;height:5px;background:var(--signal-bg);border-radius:9px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:7px}.signal i{height:100%;display:block;background:var(--green)}
+.message{font-size:12px;color:var(--muted);min-height:16px}.help{padding:0 14px 14px;color:var(--muted);font-size:12px;line-height:1.5}.stack{display:grid;gap:12px}.subhead{padding:14px 14px 0;font-size:13px;font-weight:700}.divider{border-top:1px solid var(--line)}.danger{color:var(--red)}code{font-size:11px;color:var(--green)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+.ip-box{display:flex;align-items:center;justify-content:space-between;background:var(--pale);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-top:10px}
+.ip-text{font-size:20px;font-weight:750;letter-spacing:.5px;color:var(--green);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px;padding:6px 11px;background:var(--card);border:1px solid var(--line);color:var(--green);border-radius:6px;cursor:pointer;transition:all .15s}
+.copy-btn:hover{background:var(--pale);border-color:var(--green)}
+.copy-btn.copied{background:var(--green);color:#fff;border-color:var(--green)}
+.kv-list{display:grid;gap:8px;padding:12px 14px 14px;font-size:12px}
+.kv-item{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.kv-item:last-child{border-bottom:0;padding-bottom:0}
+.domain-wrap{display:flex;align-items:center;background:var(--input);border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:1;min-width:200px}
+.domain-prefix,.domain-suffix{padding:9px 10px;background:var(--line);color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap}
+.domain-prefix{border-right:1px solid var(--line)}
+.domain-suffix{border-left:1px solid var(--line)}
+.domain-wrap input{border:0;padding:9px 10px;flex:1;min-width:80px;font-weight:600;background:transparent;color:var(--ink)}
+.domain-wrap input:focus{outline:none}
+.guide-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.guide-tab{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.guide-tab:hover{border-color:var(--green)}
+.guide-tab.active{background:var(--pale);color:var(--green);border-color:var(--green)}
+.guide-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.guide-steps{margin:0;padding-left:20px;display:grid;gap:10px}
+.guide-steps li{color:var(--ink);line-height:1.6}
+.code-tag{background:var(--code);border:1px solid var(--line);padding:2px 7px;border-radius:5px;font-family:ui-monospace,monospace;font-size:12px;color:var(--ink);font-weight:600}
+.dash-foot{margin-top:40px;padding:20px 4px 10px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.foot-links{display:flex;align-items:center;gap:10px}
+.foot-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s}
+.foot-btn:hover{background:var(--line);border-color:var(--green)}
+.sponsor-btn{color:#b33951;border-color:#fad4dc;background:#fff8f9}
+[data-theme="dark"] .sponsor-btn{color:#f87171;border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.1)}
+.sponsor-btn:hover{background:#ffeff2;border-color:#f8a5b6;color:#9b223b}
+[data-theme="dark"] .sponsor-btn:hover{background:rgba(248,113,113,0.2);color:#fff}
+
+/* Login View */
+.login-view{position:fixed;inset:0;background:radial-gradient(circle at 50% 25%,var(--card) 0%,var(--bg) 100%);display:flex;align-items:center;justify-content:center;padding:20px;z-index:999}
+.login-box{width:100%;max-width:390px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 24px;box-shadow:0 10px 32px var(--shadow)}
+.login-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.login-body h2{font-size:20px;margin:0 0 6px;letter-spacing:-.3px}
+.login-sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+.login-error{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--red);padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:16px}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin-bottom:6px}
+.field-full{width:100%}
+.pass-wrap{position:relative;display:flex;align-items:center}
+.pass-toggle{position:absolute;right:8px;background:transparent;border:0;color:var(--muted);padding:4px 6px;font-size:13px;cursor:pointer}
+.form-opts{display:flex;justify-content:space-between;align-items:center;margin:16px 0 20px;font-size:12px}
+.rem-label{display:inline-flex;align-items:center;gap:7px;cursor:pointer;color:var(--muted)}
+.btn-block{width:100%;padding:11px;font-weight:700;border-radius:8px;font-size:14px}
+.login-foot{text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.link-btn{background:transparent;border:0;color:var(--green);font-size:12px;cursor:pointer;padding:4px 8px;font-weight:600}
+.link-btn:hover{text-decoration:underline;background:transparent}
+
+@media(max-width:900px){.side{width:190px}.main{margin-left:190px;padding:24px 20px 40px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){
+.side{position:sticky;top:0;width:auto;padding:10px 14px 6px;border-right:0;border-bottom:1px solid var(--line);background:var(--side);backdrop-filter:blur(10px);box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+.brand{padding:0 0 6px}.nav-title,.side-foot{display:none}
+.user-bar{margin-bottom:6px;padding:5px 8px}
+.nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;gap:6px;padding-bottom:4px}
+.nav::-webkit-scrollbar{display:none}
+.nav a{white-space:nowrap;padding:7px 12px;font-size:12px;border-radius:20px;box-shadow:none}
+.nav a.active{box-shadow:none;border:1px solid var(--green)}
+.main{margin:0;padding:16px 14px 40px}
+.top,.section{scroll-margin-top:145px}
+.top{align-items:flex-start}.top h1{font-size:21px}.live{font-size:11px}
+.hero{align-items:flex-start;flex-wrap:wrap}.hero-copy{min-width:60%}.actions{margin-left:auto}.grid{gap:8px}
+.stat{padding:12px}.stat-value{font-size:20px}.section-head{align-items:flex-start}th,td{padding:10px}.form-row{align-items:stretch}.form-row button{flex:0 0 auto}
+}
+</style></head><body>
+
+<div id=loginView class=login-view style="display:none">
+<div class=login-box>
+<div class=login-top>
+<div class=brand-left><span class=brand-icon>◈</span><span>C3 AdBlock</span></div>
+<div style="display:flex;align-items:center;gap:6px">
+<button type=button id=loginThemeBtn class=theme-btn title="Giao diện Sáng/Tối">🌙</button>
+<div class=lang-switch id=loginLangSwitch><button type=button class="lang-btn active" data-lang=vi>VI</button><button type=button class=lang-btn data-lang=en>EN</button></div>
+</div>
+</div>
+<div class=login-body>
+<h2 data-i18n=login_title>Đăng nhập quản trị</h2>
+<p class=login-sub data-i18n=login_subtitle>Nhập tài khoản để quản lý thiết bị DNS AdBlock</p>
+<div id=loginError class=login-error style="display:none"></div>
+<form id=loginForm>
+<div class=form-group>
+<label for=loginUser data-i18n=login_username>Tên đăng nhập</label>
+<input type=text id=loginUser class="field field-full" placeholder="admin" required autocomplete=username>
+</div>
+<div class=form-group>
+<label for=loginPass data-i18n=login_password>Mật khẩu</label>
+<div class=pass-wrap>
+<input type=password id=loginPass class="field field-full" placeholder="••••••••" required autocomplete=current-password>
+<button type=button id=togglePassBtn class=pass-toggle title="Hiện/Ẩn">👁</button>
+</div>
+</div>
+<div class=form-opts>
+<label class=rem-label><input type=checkbox id=rememberMe checked> <span data-i18n=login_remember>Ghi nhớ đăng nhập</span></label>
+</div>
+<button type=submit id=loginSubmitBtn class="primary btn-block" data-i18n=login_btn>Đăng nhập</button>
+</form>
+<div class=login-foot>
+<button type=button id=btnSkipLogin class=link-btn data-i18n=login_readonly>Xem thống kê nhanh (Chỉ đọc) →</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class=layout id=dashView>
+<aside class=side><div class=brand>
+<div class=brand-left><span class=brand-icon>◈</span><span>C3 AdBlock</span></div>
+<div style="display:flex;align-items:center;gap:6px">
+<button type=button id=themeBtn class=theme-btn title="Giao diện Sáng/Tối">🌙</button>
+<div class=lang-switch id=dashLangSwitch><button type=button class="lang-btn active" data-lang=vi>VI</button><button type=button class=lang-btn data-lang=en>EN</button></div>
+</div>
+</div>
+<div class=user-bar id=userBar>
+<span class=user-name id=userLabel>👤 admin</span>
+<button type=button class=logout-btn id=authActionBtn data-i18n=logout_btn>Đăng xuất</button>
+</div>
+<div class=nav-title data-i18n=nav_title>QUẢN LÝ</div>
+<nav class=nav id=navMenu>
+<a class=active href=#overview data-nav=overview data-i18n=nav_overview>Tổng quan</a>
+<a href=#dnshost data-nav=dnshost data-i18n=nav_dnshost>DNS &amp; Tên miền</a>
+<a href=#dnsguide data-nav=dnsguide data-i18n=nav_dnsguide>Hướng dẫn cài DNS</a>
+<a href=#queries data-nav=queries data-i18n=nav_queries>Truy vấn DNS</a>
+<a href=#clients data-nav=clients data-i18n=nav_clients>Thiết bị</a>
+<a href=#filters data-nav=filters data-i18n=nav_filters>Bộ lọc</a>
+<a href=#network data-nav=network data-i18n=nav_network>Mạng Wi-Fi</a>
+<a href=#maintenance data-nav=maintenance data-i18n=nav_maintenance>Cập nhật</a>
+</nav>
+<div class=side-foot>ESP32 · <span id=sideIp data-i18n=side_connecting>đang kết nối…</span></div></aside>
+<main class=main><div class=top id=overview><div><p class=eyebrow>DNS PROTECTION</p><h1 data-i18n=heading_overview>Tổng quan</h1></div><div class=live><span class=dot id=liveDot></span><span id=liveText data-i18n=live_active>Đang hoạt động</span></div></div>
+<div class=warn id=credwarn hidden data-i18n-html=cred_warn><b>Cảnh báo:</b> Mật khẩu quản trị vẫn đang dùng giá trị mặc định. Hãy đổi WEB_PASS/OTA_PASS trong <code>secrets.h</code> rồi nạp lại firmware.</div>
+<div class=hero id=blockbar><div class=shield id=blockIcon>✓</div><div class=hero-copy><b id=blockstate data-i18n=hero_blocking>Đang chặn quảng cáo</b><p id=blockdetail data-i18n=hero_blocking_desc>DNS đang được bảo vệ bởi danh sách chặn.</p></div>
+<div class=actions><select class=field id=pausedur aria-label="Pause Duration"><option value=30 data-i18n=opt_30s>30 giây</option><option value=300 selected data-i18n=opt_5m>5 phút</option><option value=1800 data-i18n=opt_30m>30 phút</option><option value=0 data-i18n=opt_manual>Đến khi bật lại</option></select><button id=pausebtn class=primary data-i18n=btn_pause>Tạm dừng</button></div></div>
+<div class=grid id=sys></div>
+
+<section class=section id=dnshost>
+<div class=section-head><div><h2 data-i18n=dnshost_title>Địa chỉ DNS &amp; Tên miền</h2><p class=hint data-i18n=dnshost_hint>Xem địa chỉ máy chủ DNS để cài đặt và tùy chỉnh tên miền nội bộ c3adblock.local.</p></div></div>
+<div class=card-grid>
+<div class=panel>
+<div class=subhead data-i18n=dns_srv_title>Máy chủ DNS Cục bộ</div>
+<div style="padding:0 14px">
+<div class=ip-box>
+<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px" data-i18n=dns_ip_label>Địa chỉ IP DNS</div><div class=ip-text id=dnsIpDisplay>—</div></div>
+<button type=button id=copyIpBtn class=copy-btn title="Sao chép IP" data-i18n=btn_copy_ip>📋 Sao chép</button>
+</div>
+</div>
+<div class=kv-list>
+<div class=kv-item><span class=muted data-i18n=dns_port_label>Cổng phân giải</span><span><b>53</b> (UDP/TCP)</span></div>
+<div class=kv-item><span class=muted data-i18n=dns_upstream_label>DNS Upstream</span><span id=upstreamDisplay>9.9.9.9 (Quad9)</span></div>
+<div class=kv-item><span class=muted data-i18n=dns_status_label>Trạng thái</span><span class="badge allowed" data-i18n=dns_status_ready>● Đang hoạt động</span></div>
+</div>
+<div class=help data-i18n-html=dns_card_help>Điền địa chỉ IP này vào phần DNS của Router hoặc thiết bị để chặn quảng cáo toàn bộ hệ sinh thái.</div>
+</div>
+
+<div class=panel>
+<div class=subhead data-i18n=host_cfg_title>Tên miền nội bộ (mDNS)</div>
+<div class=kv-list style="padding-top:14px">
+<div class=kv-item><span class=muted data-i18n=host_current_label>Địa chỉ hiện tại</span><span><a id=currHostLink href="http://c3adblock.local" target="_blank" class=code-tag style="color:var(--green)">http://<span id=currHostName>c3adblock</span>.local</a></span></div>
+</div>
+<form class=form-row id=hostnameForm style="padding-top:4px">
+<div class=domain-wrap>
+<span class=domain-prefix>http://</span>
+<input id=hostnameInput placeholder="c3adblock" maxlength="32" autocomplete="off" required>
+<span class=domain-suffix>.local</span>
+</div>
+<button class=primary data-i18n=btn_save_host>Lưu tên miền</button>
+<span class=message id=hostnameMsg></span>
+</form>
+<div class=help data-i18n=host_help_text>Đổi tên truy cập dashboard trong mạng gia đình (chỉ gồm chữ cái, số và dấu gạch ngang, từ 2–32 ký tự).</div>
+</div>
+</div>
+</section>
+
+<section class=section id=dnsguide>
+<div class=section-head><div><h2 data-i18n=dnsguide_title>Hướng dẫn cài đặt DNS</h2><p class=hint data-i18n=dnsguide_hint>Cấu hình DNS trỏ về IP thiết bị này để kích hoạt chặn quảng cáo cho toàn mạng hoặc từng máy.</p></div></div>
+<div class=guide-nav id=guideTabs>
+<button type=button class="guide-tab active" data-tab=router>🌐 Router / Modem Wi-Fi</button>
+<button type=button class=guide-tab data-tab=ios>📱 iPhone / iPad (iOS)</button>
+<button type=button class=guide-tab data-tab=android>🤖 Điện thoại Android</button>
+<button type=button class=guide-tab data-tab=win>💻 Máy tính Windows</button>
+<button type=button class=guide-tab data-tab=mac>🍏 macOS</button>
+</div>
+<div class=guide-card>
+<div id=guideContent_router class=guide-content>
+<h3 style="margin:0 0 10px;font-size:14px" data-i18n=g_router_title>Cài đặt trên Router / Modem Wi-Fi (Chặn toàn bộ thiết bị trong nhà — Khuyên dùng)</h3>
+<ol class=guide-steps>
+<li data-i18n-html=g_router_step1>Mở trình duyệt, đăng nhập vào trang quản trị Modem/Router Wi-Fi của bạn (thường là <code>192.168.1.1</code> hoặc <code>192.168.0.1</code>).</li>
+<li data-i18n-html=g_router_step2>Tìm đến mục <b>Mạng nội bộ (LAN / DHCP Server Settings)</b>.</li>
+<li data-i18n-html=g_router_step3>Tại ô <b>Primary DNS (DNS 1)</b>, nhập địa chỉ IP của ESP32: <code class="code-tag dyn-dns-ip">192.168.x.x</code>. Ô Secondary DNS (DNS 2) có thể để trống hoặc điền <code>9.9.9.9</code> / <code>1.1.1.1</code> dự phòng.</li>
+<li data-i18n-html=g_router_step4><b>Khuyến khích:</b> Trong mục <b>DHCP Static Lease (Gán IP cố định)</b>, hãy gán cố định địa chỉ IP cho ESP32 để IP không bị thay đổi khi mất điện.</li>
+<li data-i18n-html=g_router_step5>Lưu cài đặt và khởi động lại Router (hoặc tắt/bật lại Wi-Fi trên các thiết bị trong nhà để nhận DNS mới).</li>
+</ol>
+</div>
+<div id=guideContent_ios class=guide-content style="display:none">
+<h3 style="margin:0 0 10px;font-size:14px" data-i18n=g_ios_title>Cài đặt trên iPhone &amp; iPad (iOS / iPadOS)</h3>
+<ol class=guide-steps>
+<li data-i18n-html=g_ios_step1>Vào <b>Cài đặt (Settings)</b> &gt; <b>Wi-Fi</b>.</li>
+<li data-i18n-html=g_ios_step2>Nhấn vào biểu tượng chữ <b>(i)</b> màu xanh cạnh mạng Wi-Fi bạn đang kết nối.</li>
+<li data-i18n-html=g_ios_step3>Cuộn xuống dưới chọn mục <b>Định cấu hình DNS (Configure DNS)</b> &gt; Chuyển từ <b>Tự động (Automatic)</b> sang <b>Thủ công (Manual)</b>.</li>
+<li data-i18n-html=g_ios_step4>Xóa các DNS cũ, nhấn <b>Thêm máy chủ (Add Server)</b> và nhập IP: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Nhấn <b>Lưu (Save)</b> ở góc trên bên phải.</li>
+</ol>
+</div>
+<div id=guideContent_android class=guide-content style="display:none">
+<h3 style="margin:0 0 10px;font-size:14px" data-i18n=g_android_title>Cài đặt trên điện thoại Android</h3>
+<ol class=guide-steps>
+<li data-i18n-html=g_android_step1>Vào <b>Cài đặt</b> &gt; <b>Kết nối / Mạng &amp; Internet</b> &gt; <b>Wi-Fi</b>.</li>
+<li data-i18n-html=g_android_step2>Nhấn vào biểu tượng Bánh răng (hoặc nhấn giữ tên mạng Wi-Fi) &gt; Chọn <b>Nâng cao / Sửa đổi mạng</b>.</li>
+<li data-i18n-html=g_android_step3>Chuyển <b>Cài đặt IP (IP settings)</b> từ DHCP sang <b>Tĩnh (Static)</b>.</li>
+<li data-i18n-html=g_android_step4>Nhập <b>DNS 1</b>: <code class="code-tag dyn-dns-ip">192.168.x.x</code>, DNS 2: <code>9.9.9.9</code> &gt; Nhấn <b>Lưu</b>.</li>
+</ol>
+</div>
+<div id=guideContent_win class=guide-content style="display:none">
+<h3 style="margin:0 0 10px;font-size:14px" data-i18n=g_win_title>Cài đặt trên Máy tính Windows (10 &amp; 11)</h3>
+<ol class=guide-steps>
+<li data-i18n-html=g_win_step1>Mở <b>Settings</b> (phím tắt Win + I) &gt; Chọn <b>Network &amp; internet</b> &gt; Chọn <b>Wi-Fi</b> (hoặc <b>Ethernet</b>).</li>
+<li data-i18n-html=g_win_step2>Nhấp vào mạng đang kết nối &gt; Cuộn tới mục <b>DNS server assignment</b> &gt; Nhấn nút <b>Edit</b>.</li>
+<li data-i18n-html=g_win_step3>Chuyển sang <b>Manual</b>, gạt bật mục <b>IPv4</b>.</li>
+<li data-i18n-html=g_win_step4>Tại ô <b>Preferred DNS</b>, nhập: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Nhấn <b>Save</b>.</li>
+</ol>
+</div>
+<div id=guideContent_mac class=guide-content style="display:none">
+<h3 style="margin:0 0 10px;font-size:14px" data-i18n=g_mac_title>Cài đặt trên Máy tính macOS</h3>
+<ol class=guide-steps>
+<li data-i18n-html=g_mac_step1>Mở <b>Cài đặt hệ thống (System Settings)</b> &gt; Chọn mục <b>Network (Mạng)</b> &gt; Chọn <b>Wi-Fi</b> (hoặc Ethernet).</li>
+<li data-i18n-html=g_mac_step2>Nhấn nút <b>Details... (Chi tiết...)</b> bên cạnh mạng Wi-Fi đang kết nối.</li>
+<li data-i18n-html=g_mac_step3>Chọn thẻ <b>DNS</b> ở thanh bên trái &gt; Nhấn nút dấu cộng <b>(+)</b> bên dưới danh sách DNS Servers.</li>
+<li data-i18n-html=g_mac_step4>Nhập địa chỉ IP: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Nhấn <b>OK</b> để lưu cấu hình.</li>
+</ol>
+</div>
+</div>
+</section>
+
+<section class=section id=queries><div class=section-head><div><h2 data-i18n=queries_title>Truy vấn DNS gần đây</h2><p class=hint data-i18n=queries_hint>16 tên miền gần nhất được thiết bị xử lý · Không lưu đường dẫn trang web.</p></div><button id=refreshBtn data-i18n=btn_refresh>Làm mới</button></div>
+<div class=panel><div class=table-wrap><table><thead><tr><th data-i18n=th_domain>Tên miền</th><th data-i18n=th_client>Thiết bị</th><th data-i18n=th_result>Kết quả</th><th data-i18n=th_time>Thời gian</th></tr></thead><tbody id=queryRows><tr><td class=empty colspan=4 data-i18n=empty_queries>Chưa có truy vấn DNS.</td></tr></tbody></table></div></div></section>
+
+<section class=section id=clients><div class=section-head><div><h2 data-i18n=clients_title>Thiết bị trong mạng</h2><p class=hint data-i18n=clients_hint>Thống kê DNS theo địa chỉ IP · Có thể chặn truy cập DNS từ thiết bị.</p></div></div>
+<div class=panel><div class=table-wrap><table><thead><tr><th data-i18n=th_ip>Địa chỉ IP</th><th data-i18n=th_mac>Địa chỉ MAC</th><th data-i18n=stat_blocked>Đã chặn</th><th data-i18n=stat_allowed>Đã cho phép</th><th></th></tr></thead><tbody id=clientRows></tbody></table></div></div></section>
+
+<section class=section id=filters><div class=section-head><div><h2 data-i18n=filters_title>Bộ lọc tên miền</h2><p class=hint data-i18n=filters_hint>Thêm tên miền để chặn riêng trên thiết bị này.</p></div></div>
+<div class=panel><form class=form-row id=domainForm><input class="field field-grow" id=domainInput placeholder="ads.example.com" autocomplete=off><button class=primary data-i18n=btn_add_domain>Chặn tên miền</button><span class=message id=domainMsg></span></form><div class=table-wrap><table><thead><tr><th data-i18n=th_custom_domain>Tên miền tùy chỉnh</th><th></th></tr></thead><tbody id=customRows></tbody></table></div></div></section>
+
+<section class=section id=network><div class=section-head><div><h2 data-i18n=wifi_title>Mạng Wi-Fi</h2><p class=hint data-i18n=wifi_hint>Quét các mạng lân cận. Quá trình quét có thể làm gián đoạn DNS trong chốc lát.</p></div><button id=scanBtn class=primary data-i18n=btn_scan>Quét Wi-Fi</button></div>
+<div class=panel><div class=table-wrap><table><thead><tr><th data-i18n=th_ssid>Tên mạng</th><th data-i18n=th_signal>Tín hiệu</th><th data-i18n=th_strength>Cường độ</th><th data-i18n=th_security>Bảo mật</th></tr></thead><tbody id=wifiRows><tr><td class=empty colspan=4 data-i18n=wifi_empty>Nhấn “Quét Wi-Fi” để tìm mạng xung quanh.</td></tr></tbody></table></div><div class=help><span id=scanMsg data-i18n=wifi_help>Quét không tự kết nối hoặc thay đổi mạng đã lưu.</span></div>
+<div class="form-row divider"><button id=forgetBtn class=danger data-i18n=btn_forget_wifi>Quên Wi-Fi đã lưu</button><span class=message id=wifiMsg></span></div></div></section>
+
+<section class=section id=maintenance><div class=section-head><div><h2 data-i18n=maint_title>Cập nhật & quản lý</h2><p class=hint data-i18n=maint_hint>Các tệp được truyền theo từng phần; không cần thư viện giao diện bên ngoài.</p></div></div>
+<div class=stack><div class=panel><div class=subhead data-i18n=maint_blocklist_upload>Danh sách chặn · Tải tệp lên</div><form class=form-row id=blocklistForm><input type=file id=blocklistFile accept=.bin><button class=primary data-i18n=btn_upload_list>Tải danh sách</button><span class=message id=blocklistMsg></span></form><div class=help data-i18n-html=maint_blocklist_help>Tạo <code>blocklist.bin</code> bằng <code>tools/build_blocklist.py</code>, sau đó tải lên thiết bị.</div>
+<div class=divider></div><div class=subhead data-i18n=maint_auto_update>Danh sách chặn · Tự động cập nhật</div><div class=form-row><input class="field field-grow" id=updateUrl placeholder="https://host/blocklist.bin"><label class=muted><span data-i18n=label_every>mỗi</span> <input class=field id=updateInterval type=number min=1 value=24 style="width:65px"> <span data-i18n=label_hours>giờ</span></label><button id=saveUpdate data-i18n=btn_save>Lưu</button><button id=fetchUpdate data-i18n=btn_fetch_now>Kiểm tra ngay</button><span class=message id=updateMsg></span></div><div class=help><span data-i18n=label_last_update>Trạng thái lần cập nhật gần nhất: </span><span id=updateStatus>—</span></div></div>
+<div class=panel><div class=subhead data-i18n=maint_firmware>Firmware · OTA</div><form class=form-row id=firmwareForm><input type=file id=firmwareFile accept=.bin><button class=primary data-i18n=btn_flash_fw>Nạp firmware</button><span class=message id=firmwareMsg></span></form><div class=help data-i18n-html=maint_firmware_help>Nạp <code>.pio/build/c3/firmware.bin</code>. Thiết bị sẽ khởi động lại sau khi cập nhật.</div></div></div></section>
+
+<footer class=dash-foot>
+<div class=foot-left>
+<b>C3 AdBlock</b> · <span data-i18n=foot_credit>Phát triển bởi <b>Tám Công Nghệ</b> &amp; cộng đồng mã nguồn mở</span>
+</div>
+<div class=foot-links>
+<a href="https://github.com/minhduc290613/adblock-esp32" target="_blank" rel="noopener" class=foot-btn>
+<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+GitHub
+</a>
+<a href="https://donate.protechvn.io.vn" target="_blank" rel="noopener" class="foot-btn sponsor-btn">
+<span style="color:#e0245e">♥</span> <span data-i18n=foot_sponsor>Ủng hộ (Sponsor)</span>
+</a>
+</div>
+</footer>
+</main></div><script>
+const $=id=>document.getElementById(id),csrf={'X-Requested-With':'c3-adblock'};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function emptyRow(body,cols,text){body.innerHTML=`<tr><td class=empty colspan=${cols}>${text}</td></tr>`}
+function fmt(n){return Number(n).toLocaleString()}
+
+let authToken=localStorage.getItem('c3_auth')||sessionStorage.getItem('c3_auth')||'';
+let authUser=localStorage.getItem('c3_user')||sessionStorage.getItem('c3_user')||'admin';
+
+function getHeaders(){
+const h={'X-Requested-With':'c3-adblock'};
+if(authToken)h['Authorization']='Basic '+authToken;
+return h;
+}
+
+async function request(url,options={}){
+const headers=Object.assign(getHeaders(),options.headers||{});
+const r=await fetch(url,{...options,headers});
+if(r.status===401){
+authToken='';
+localStorage.removeItem('c3_auth');sessionStorage.removeItem('c3_auth');
+showLogin(t('session_expired'));
+throw Error(t('session_expired'));
+}
+if(!r.ok)throw Error((await r.text())||('HTTP '+r.status));
+return r;
+}
+
+const I18N={
+vi:{
+login_title:'Đăng nhập quản trị',login_subtitle:'Nhập tài khoản để quản lý thiết bị DNS AdBlock',login_username:'Tên đăng nhập',login_password:'Mật khẩu',login_remember:'Ghi nhớ đăng nhập',login_btn:'Đăng nhập',login_btn_loading:'Đang xác thực…',login_err_empty:'Vui lòng nhập tài khoản và mật khẩu.',login_err_invalid:'Tài khoản hoặc mật khẩu không chính xác.',login_readonly:'Xem thống kê nhanh (Chỉ đọc) →',logout_btn:'Đăng xuất',login_trigger:'Đăng nhập',status_readonly:'Chế độ chỉ đọc',session_expired:'Phiên làm việc hết hạn, vui lòng đăng nhập lại.',
+nav_title:'QUẢN LÝ',nav_overview:'Tổng quan',nav_dnshost:'DNS & Tên miền',nav_dnsguide:'Hướng dẫn cài DNS',nav_queries:'Truy vấn DNS',nav_clients:'Thiết bị',nav_filters:'Bộ lọc',nav_network:'Mạng Wi-Fi',nav_maintenance:'Cập nhật',side_connecting:'đang kết nối…',heading_overview:'Tổng quan',live_active:'Đang hoạt động',live_lost:'Mất kết nối với thiết bị',
+cred_warn:'<b>Cảnh báo:</b> Mật khẩu quản trị vẫn đang dùng giá trị mặc định. Hãy đổi WEB_PASS/OTA_PASS trong <code>secrets.h</code> rồi nạp lại firmware.',
+hero_blocking:'Đang chặn quảng cáo',hero_blocking_desc:'DNS đang được bảo vệ bởi danh sách chặn.',hero_paused:'Đang tạm dừng chặn',hero_paused_resume:'Tự bật lại sau {s} giây.',hero_paused_manual:'Bật lại khi bạn sẵn sàng.',
+opt_30s:'30 giây',opt_5m:'5 phút',opt_30m:'30 phút',opt_manual:'Đến khi bật lại',btn_pause:'Tạm dừng',btn_resume:'Bật lại',
+stat_blocked:'Đã chặn',stat_allowed:'Đã cho phép',stat_blocklist:'Danh sách chặn',stat_domains:'{n} tên miền',stat_clients:'Thiết bị',stat_wifi:'Tín hiệu Wi-Fi',stat_temp:'Nhiệt độ',stat_ram:'RAM còn trống',stat_uptime:'Thời gian chạy',
+dnshost_title:'Địa chỉ DNS & Quản lý Tên miền',dnshost_hint:'Xem địa chỉ IP máy chủ DNS và tùy chỉnh tên miền truy cập dashboard (mDNS).',
+dns_srv_title:'Máy chủ DNS Cục bộ',dns_ip_label:'Địa chỉ IP DNS',btn_copy_ip:'📋 Sao chép IP',copied_ip:'✓ Đã sao chép!',dns_port_label:'Cổng phân giải',dns_upstream_label:'DNS chuyển tiếp (Upstream)',dns_status_label:'Trạng thái',dns_status_ready:'● Đang hoạt động (Cổng 53)',dns_card_help:'Điền địa chỉ IP này vào phần DNS của Router hoặc thiết bị để chặn quảng cáo toàn bộ hệ sinh thái.',
+host_cfg_title:'Tên miền nội bộ (mDNS)',host_current_label:'Địa chỉ hiện tại',btn_save_host:'Lưu tên miền',host_saving:'Đang lưu tên miền…',host_saved:'Đã đổi tên miền! Truy cập qua địa chỉ mới.',host_invalid:'Tên miền không hợp lệ (2-32 ký tự: chữ, số, dấu -).',host_help_text:'Đổi tên truy cập dashboard trong mạng gia đình (ví dụ: c3adblock -> http://c3adblock.local).',
+dnsguide_title:'Hướng dẫn cài đặt DNS',dnsguide_hint:'Cấu hình DNS trỏ về IP thiết bị này để kích hoạt chặn quảng cáo cho toàn mạng hoặc từng máy.',
+g_router_title:'Cài đặt trên Router / Modem Wi-Fi (Chặn toàn bộ thiết bị trong nhà — Khuyên dùng)',
+g_router_step1:'Mở trình duyệt, đăng nhập vào trang quản trị Modem/Router Wi-Fi của bạn (thường là <code>192.168.1.1</code> hoặc <code>192.168.0.1</code>).',
+g_router_step2:'Tìm đến mục <b>Mạng nội bộ (LAN / DHCP Server Settings)</b>.',
+g_router_step3:'Tại ô <b>Primary DNS (DNS 1)</b>, nhập địa chỉ IP của ESP32: <code class="code-tag dyn-dns-ip">192.168.x.x</code>. Ô Secondary DNS (DNS 2) có thể để trống hoặc điền <code>9.9.9.9</code> / <code>1.1.1.1</code> dự phòng.',
+g_router_step4:'<b>Khuyến khích:</b> Trong mục <b>DHCP Static Lease (Gán IP cố định)</b>, hãy gán cố định địa chỉ IP cho ESP32 để IP không bị thay đổi khi mất điện.',
+g_router_step5:'Lưu cài đặt và khởi động lại Router (hoặc tắt/bật lại Wi-Fi trên các thiết bị trong nhà để nhận DNS mới).',
+g_ios_title:'Cài đặt trên iPhone & iPad (iOS / iPadOS)',
+g_ios_step1:'Vào <b>Cài đặt (Settings)</b> &gt; <b>Wi-Fi</b>.',
+g_ios_step2:'Nhấn vào biểu tượng chữ <b>(i)</b> màu xanh cạnh mạng Wi-Fi bạn đang kết nối.',
+g_ios_step3:'Cuộn xuống dưới chọn mục <b>Định cấu hình DNS (Configure DNS)</b> &gt; Chuyển từ <b>Tự động (Automatic)</b> sang <b>Thủ công (Manual)</b>.',
+g_ios_step4:'Xóa các DNS cũ, nhấn <b>Thêm máy chủ (Add Server)</b> và nhập IP: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Nhấn <b>Lưu (Save)</b> ở góc trên bên phải.',
+g_android_title:'Cài đặt trên điện thoại Android',
+g_android_step1:'Vào <b>Cài đặt</b> &gt; <b>Kết nối / Mạng & Internet</b> &gt; <b>Wi-Fi</b>.',
+g_android_step2:'Nhấn vào biểu tượng Bánh răng (hoặc nhấn giữ tên mạng Wi-Fi) &gt; Chọn <b>Nâng cao / Sửa đổi mạng</b>.',
+g_android_step3:'Chuyển <b>Cài đặt IP (IP settings)</b> từ DHCP sang <b>Tĩnh (Static)</b>.',
+g_android_step4:'Nhập <b>DNS 1</b>: <code class="code-tag dyn-dns-ip">192.168.x.x</code>, DNS 2: <code>9.9.9.9</code> &gt; Nhấn <b>Lưu</b>.',
+g_win_title:'Cài đặt trên Máy tính Windows (10 & 11)',
+g_win_step1:'Mở <b>Settings</b> (phím tắt Win + I) &gt; Chọn <b>Network & internet</b> &gt; Chọn <b>Wi-Fi</b> (hoặc <b>Ethernet</b>).',
+g_win_step2:'Nhấp vào mạng đang kết nối &gt; Cuộn tới mục <b>DNS server assignment</b> &gt; Nhấn nút <b>Edit</b>.',
+g_win_step3:'Chuyển sang <b>Manual</b>, gạt bật mục <b>IPv4</b>.',
+g_win_step4:'Tại ô <b>Preferred DNS</b>, nhập: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Nhấn <b>Save</b>.',
+g_mac_title:'Cài đặt trên Máy tính macOS',
+g_mac_step1:'Mở <b>Cài đặt hệ thống (System Settings)</b> &gt; Chọn mục <b>Network (Mạng)</b> &gt; Chọn <b>Wi-Fi</b> (hoặc Ethernet).',
+g_mac_step2:'Nhấn nút <b>Details... (Chi tiết...)</b> bên cạnh mạng Wi-Fi đang kết nối.',
+g_mac_step3:'Chọn thẻ <b>DNS</b> ở thanh bên trái &gt; Nhấn nút dấu cộng <b>(+)</b> bên dưới danh sách DNS Servers.',
+g_mac_step4:'Nhập địa chỉ IP: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Nhấn <b>OK</b> để lưu cấu hình.',
+foot_credit:'Phát triển bởi <b>Tám Công Nghệ</b> & cộng đồng mã nguồn mở',foot_sponsor:'Ủng hộ (Sponsor)',
+queries_title:'Truy vấn DNS gần đây',queries_hint:'16 tên miền gần nhất được thiết bị xử lý · Không lưu đường dẫn trang web.',btn_refresh:'Làm mới',th_domain:'Tên miền',th_client:'Thiết bị',th_result:'Kết quả',th_time:'Thời gian',empty_queries:'Chưa có truy vấn DNS.',
+badge_blocked:'Đã chặn',badge_allowed:'Đã cho phép',time_just_now:'vừa xong',time_ago:'{s} giây trước',
+clients_title:'Thiết bị trong mạng',clients_hint:'Thống kê DNS theo địa chỉ IP · Có thể chặn truy cập DNS từ thiết bị.',th_ip:'Địa chỉ IP',th_mac:'Địa chỉ MAC',badge_banned:'ĐÃ CHẶN',btn_ban:'Chặn thiết bị',btn_unban:'Bỏ chặn',empty_clients:'Chưa có thiết bị gửi truy vấn DNS.',
+filters_title:'Bộ lọc tên miền',filters_hint:'Thêm tên miền để chặn riêng trên thiết bị này.',btn_add_domain:'Chặn tên miền',msg_saving:'Đang lưu…',msg_added:'Đã thêm',th_custom_domain:'Tên miền tùy chỉnh',btn_remove:'Gỡ',empty_filters:'Chưa có tên miền tùy chỉnh.',
+wifi_title:'Mạng Wi-Fi',wifi_hint:'Quét các mạng lân cận. Quá trình quét có thể làm gián đoạn DNS trong chốc lát.',btn_scan:'Quét Wi-Fi',btn_scanning:'Đang quét Wi-Fi…',th_ssid:'Tên mạng',th_signal:'Tín hiệu',th_strength:'Cường độ',th_security:'Bảo mật',badge_secured:'Có mật khẩu',badge_open:'Mở',wifi_empty:'Nhấn “Quét Wi-Fi” để tìm mạng xung quanh.',wifi_none:'Không tìm thấy mạng Wi-Fi nào.',wifi_help:'Quét không tự kết nối hoặc thay đổi mạng đã lưu.',wifi_searching:'Đang tìm mạng xung quanh…',wifi_found:'Tìm thấy {n} mạng. Quét không tự kết nối hoặc thay đổi mạng đã lưu.',wifi_failed:'Quét Wi-Fi thất bại. Hãy thử lại.',wifi_timeout:'Quét quá thời gian chờ.',wifi_error:'Không thể hoàn tất quét Wi-Fi.',btn_forget_wifi:'Quên Wi-Fi đã lưu',confirm_forget:'Xóa Wi-Fi đã lưu và khởi động lại vào chế độ cài đặt?',msg_rebooting:'Đang khởi động lại…',
+maint_title:'Cập nhật & quản lý',maint_hint:'Các tệp được truyền theo từng phần; không cần thư viện giao diện bên ngoài.',maint_blocklist_upload:'Danh sách chặn · Tải tệp lên',btn_upload_list:'Tải danh sách',maint_blocklist_help:'Tạo <code>blocklist.bin</code> bằng <code>tools/build_blocklist.py</code>, sau đó tải lên thiết bị.',maint_auto_update:'Danh sách chặn · Tự động cập nhật',label_every:'mỗi',label_hours:'giờ',btn_save:'Lưu',btn_fetch_now:'Kiểm tra ngay',msg_saved:'Đã lưu',msg_downloading:'Đang tải…',label_last_update:'Trạng thái lần cập nhật gần nhất: ',maint_firmware:'Firmware · OTA',btn_flash_fw:'Nạp firmware',maint_firmware_help:'Nạp <code>.pio/build/c3/firmware.bin</code>. Thiết bị sẽ khởi động lại sau khi cập nhật.',
+uploading_file:'Đang tải {size} MB…',list_updated:'Đã cập nhật danh sách',fw_rebooting:'Đang khởi động lại…'
+},
+en:{
+login_title:'Admin Sign In',login_subtitle:'Enter credentials to manage DNS AdBlock',login_username:'Username',login_password:'Password',login_remember:'Remember me',login_btn:'Sign In',login_btn_loading:'Authenticating…',login_err_empty:'Please enter username and password.',login_err_invalid:'Invalid username or password.',login_readonly:'View quick stats (Read-only) →',logout_btn:'Sign Out',login_trigger:'Sign In',status_readonly:'Read-only mode',session_expired:'Session expired, please sign in again.',
+nav_title:'MANAGEMENT',nav_overview:'Overview',nav_dnshost:'DNS & Hostname',nav_dnsguide:'Setup Guide',nav_queries:'DNS Queries',nav_clients:'Devices',nav_filters:'Filters',nav_network:'Wi-Fi Network',nav_maintenance:'Maintenance',side_connecting:'connecting…',heading_overview:'Overview',live_active:'Active',live_lost:'Device offline',
+cred_warn:'<b>Warning:</b> Admin password is using the default value. Change WEB_PASS/OTA_PASS in <code>secrets.h</code> and reflash firmware.',
+hero_blocking:'Ad blocking active',hero_blocking_desc:'DNS is protected by your blocklist.',hero_paused:'Ad blocking paused',hero_paused_resume:'Auto-resuming in {s} seconds.',hero_paused_manual:'Resume when you are ready.',
+opt_30s:'30 seconds',opt_5m:'5 minutes',opt_30m:'30 minutes',opt_manual:'Until resumed',btn_pause:'Pause',btn_resume:'Resume',
+stat_blocked:'Blocked',stat_allowed:'Allowed',stat_blocklist:'Blocklist',stat_domains:'{n} domains',stat_clients:'Devices',stat_wifi:'Wi-Fi Signal',stat_temp:'Temperature',stat_ram:'Free RAM',stat_uptime:'Uptime',
+dnshost_title:'DNS Address & Hostname Management',dnshost_hint:'View local DNS server details and configure internal mDNS dashboard address.',
+dns_srv_title:'Local DNS Server',dns_ip_label:'DNS Server IP',btn_copy_ip:'📋 Copy IP',copied_ip:'✓ Copied!',dns_port_label:'Port',dns_upstream_label:'Upstream DNS',dns_status_label:'Status',dns_status_ready:'● Active (Port 53)',dns_card_help:'Enter this IP address as your DNS server on your router or devices to block ads network-wide.',
+host_cfg_title:'Local Hostname (mDNS)',host_current_label:'Current Address',btn_save_host:'Save Hostname',host_saving:'Saving hostname…',host_saved:'Hostname updated! Access via your new URL.',host_invalid:'Invalid hostname (2-32 chars: alphanumeric and hyphens).',host_help_text:'Customize your local dashboard URL (e.g. c3adblock -> http://c3adblock.local).',
+dnsguide_title:'DNS Setup Guide',dnsguide_hint:'Point your DNS to this ESP32 IP to activate ad-blocking network-wide or per-device.',
+g_router_title:'Router / Wi-Fi Modem (Network-wide Ad Blocking — Recommended)',
+g_router_step1:'Open your browser and log into your Router settings (usually <code>192.168.1.1</code> or <code>192.168.0.1</code>).',
+g_router_step2:'Navigate to <b>LAN / DHCP Server Settings</b>.',
+g_router_step3:'In <b>Primary DNS (DNS 1)</b>, enter the ESP32 IP: <code class="code-tag dyn-dns-ip">192.168.x.x</code>. Secondary DNS can be left blank or set to <code>9.9.9.9</code> / <code>1.1.1.1</code> as backup.',
+g_router_step4:'<b>Recommended:</b> In <b>DHCP Static Lease / Reservation</b>, assign a fixed IP to your ESP32 MAC address.',
+g_router_step5:'Save settings and reboot your Router (or reconnect Wi-Fi on devices to apply new DNS).',
+g_ios_title:'iPhone & iPad (iOS / iPadOS)',
+g_ios_step1:'Go to <b>Settings</b> &gt; <b>Wi-Fi</b>.',
+g_ios_step2:'Tap the blue <b>(i)</b> info icon next to your connected Wi-Fi.',
+g_ios_step3:'Scroll down to <b>Configure DNS</b> &gt; Switch from <b>Automatic</b> to <b>Manual</b>.',
+g_ios_step4:'Delete old DNS entries, tap <b>Add Server</b>, enter IP: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Tap <b>Save</b> at top right.',
+g_android_title:'Android Phones & Tablets',
+g_android_step1:'Go to <b>Settings</b> &gt; <b>Network & internet / Connections</b> &gt; <b>Wi-Fi</b>.',
+g_android_step2:'Tap the Gear icon (or long-press your Wi-Fi name) &gt; Select <b>Advanced / Modify Network</b>.',
+g_android_step3:'Change <b>IP settings</b> from DHCP to <b>Static</b>.',
+g_android_step4:'Set <b>DNS 1</b> to: <code class="code-tag dyn-dns-ip">192.168.x.x</code>, DNS 2 to: <code>9.9.9.9</code> &gt; Tap <b>Save</b>.',
+g_win_title:'Windows PC (10 & 11)',
+g_win_step1:'Open <b>Settings</b> (Win + I) &gt; Select <b>Network & internet</b> &gt; Select <b>Wi-Fi</b> (or <b>Ethernet</b>).',
+g_win_step2:'Click on your connected network &gt; Scroll to <b>DNS server assignment</b> &gt; Click <b>Edit</b>.',
+g_win_step3:'Select <b>Manual</b>, toggle <b>IPv4</b> ON.',
+g_win_step4:'In <b>Preferred DNS</b>, enter: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Click <b>Save</b>.',
+g_mac_title:'macOS Computers',
+g_mac_step1:'Open <b>System Settings</b> &gt; Select <b>Network</b> &gt; Select <b>Wi-Fi</b> (or Ethernet).',
+g_mac_step2:'Click <b>Details...</b> next to your connected Wi-Fi network.',
+g_mac_step3:'Select the <b>DNS</b> tab &gt; Click the <b>(+)</b> plus button below the DNS list.',
+g_mac_step4:'Type the IP address: <code class="code-tag dyn-dns-ip">192.168.x.x</code> &gt; Click <b>OK</b> to apply.',
+foot_credit:'Developed by <b>Tám Công Nghệ</b> & open source community',foot_sponsor:'Sponsor',
+queries_title:'Recent DNS Queries',queries_hint:'Last 16 domains processed by device · Webpage URLs are not logged.',btn_refresh:'Refresh',th_domain:'Domain',th_client:'Device',th_result:'Result',th_time:'Time',empty_queries:'No DNS queries yet.',
+badge_blocked:'Blocked',badge_allowed:'Allowed',time_just_now:'just now',time_ago:'{s}s ago',
+clients_title:'Network Devices',clients_hint:'DNS statistics per IP · Individual devices can be blocked.',th_ip:'IP Address',th_mac:'MAC Address',badge_banned:'BANNED',btn_ban:'Ban Device',btn_unban:'Unban',empty_clients:'No devices have queried DNS yet.',
+filters_title:'Domain Filters',filters_hint:'Add specific domains to block locally on this device.',btn_add_domain:'Block Domain',msg_saving:'Saving…',msg_added:'Added',th_custom_domain:'Custom Domain',btn_remove:'Remove',empty_filters:'No custom domains.',
+wifi_title:'Wi-Fi Network',wifi_hint:'Scan nearby networks. Scanning may briefly interrupt DNS lookups.',btn_scan:'Scan Wi-Fi',btn_scanning:'Scanning Wi-Fi…',th_ssid:'SSID',th_signal:'Signal',th_strength:'Strength',th_security:'Security',badge_secured:'Secured',badge_open:'Open',wifi_empty:'Click “Scan Wi-Fi” to find nearby networks.',wifi_none:'No Wi-Fi networks found.',wifi_help:'Scanning does not auto-connect or change saved network.',wifi_searching:'Searching for nearby networks…',wifi_found:'Found {n} networks. Saved connection is unchanged.',wifi_failed:'Wi-Fi scan failed. Please retry.',wifi_timeout:'Scan timed out.',wifi_error:'Unable to complete Wi-Fi scan.',btn_forget_wifi:'Forget Saved Wi-Fi',confirm_forget:'Erase saved Wi-Fi and reboot into setup portal?',msg_rebooting:'Rebooting…',
+maint_title:'Maintenance & Updates',maint_hint:'Files are streamed in chunks; zero external JS/CSS dependencies.',maint_blocklist_upload:'Blocklist · Upload File',btn_upload_list:'Upload List',maint_blocklist_help:'Build <code>blocklist.bin</code> with <code>tools/build_blocklist.py</code>, then upload to device.',maint_auto_update:'Blocklist · Remote Auto-Update',label_every:'every',label_hours:'hours',btn_save:'Save',btn_fetch_now:'Check Now',msg_saved:'Saved',msg_downloading:'Downloading…',label_last_update:'Last update status: ',maint_firmware:'Firmware · OTA',btn_flash_fw:'Flash Firmware',maint_firmware_help:'Upload <code>.pio/build/c3/firmware.bin</code>. Device will reboot after flashing.',
+uploading_file:'Uploading {size} MB…',list_updated:'Blocklist updated',fw_rebooting:'Rebooting…'
+}
+};
+
+let currentLang=localStorage.getItem('c3_lang')||(navigator.language&&navigator.language.startsWith('vi')?'vi':'en');
+function t(k,p={}){let s=(I18N[currentLang]&&I18N[currentLang][k])||(I18N.en&&I18N.en[k])||k;for(const[x,y]of Object.entries(p))s=s.replace('{'+x+'}',y);return s}
+
+function applyLang(lang){
+currentLang=lang;
+localStorage.setItem('c3_lang',lang);
+document.documentElement.lang=lang;
+document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
+document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=t(el.dataset.i18nHtml)});
+updateUserBar();
+if(lastStats)renderStats(lastStats);
+}
+
+function handleLangClick(e){
+const b=e.target.closest('.lang-btn');
+if(b&&b.dataset.lang)applyLang(b.dataset.lang);
+}
+$('dashLangSwitch').onclick=handleLangClick;
+$('loginLangSwitch').onclick=handleLangClick;
+
+let currentTheme=localStorage.getItem('c3_theme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+function applyTheme(theme){
+currentTheme=theme;
+localStorage.setItem('c3_theme',theme);
+document.documentElement.setAttribute('data-theme',theme);
+const icon=theme==='dark'?'☀️':'🌙';
+if($('themeBtn'))$('themeBtn').textContent=icon;
+if($('loginThemeBtn'))$('loginThemeBtn').textContent=icon;
+}
+function toggleTheme(){applyTheme(currentTheme==='dark'?'light':'dark')}
+if($('themeBtn'))$('themeBtn').onclick=toggleTheme;
+if($('loginThemeBtn'))$('loginThemeBtn').onclick=toggleTheme;
+applyTheme(currentTheme);
+
+function showLogin(err=''){
+$('dashView').style.display='none';
+$('loginView').style.display='flex';
+if(err){$('loginError').textContent=err;$('loginError').style.display='block';}
+else{$('loginError').style.display='none';}
+}
+
+function showDash(){
+$('loginView').style.display='none';
+$('dashView').style.display='block';
+updateUserBar();
+load();
+}
+
+function updateUserBar(){
+if(authToken){
+$('userLabel').textContent='👤 '+(authUser||'admin');
+$('authActionBtn').textContent=t('logout_btn');
+$('authActionBtn').className='logout-btn';
+}else{
+$('userLabel').textContent=t('status_readonly');
+$('authActionBtn').textContent=t('login_trigger');
+$('authActionBtn').className='primary login-trigger-btn';
+}
+}
+
+$('authActionBtn').onclick=()=>{
+if(authToken){
+authToken='';authUser='';
+localStorage.removeItem('c3_auth');sessionStorage.removeItem('c3_auth');
+localStorage.removeItem('c3_user');sessionStorage.removeItem('c3_user');
+showLogin();
+}else{
+showLogin();
+}
+};
+
+$('btnSkipLogin').onclick=()=>showDash();
+
+$('togglePassBtn').onclick=()=>{
+const inp=$('loginPass');
+const isText=inp.type==='text';
+inp.type=isText?'password':'text';
+$('togglePassBtn').textContent=isText?'👁':'🔒';
+};
+
+$('loginForm').onsubmit=async e=>{
+e.preventDefault();
+const u=$('loginUser').value.trim();
+const p=$('loginPass').value;
+if(!u||!p){
+$('loginError').textContent=t('login_err_empty');
+$('loginError').style.display='block';
+return;
+}
+const btn=$('loginSubmitBtn');
+btn.disabled=true;
+btn.textContent=t('login_btn_loading');
+$('loginError').style.display='none';
+const token=btoa(u+':'+p);
+try{
+const r=await fetch('/login',{
+method:'POST',
+headers:{'X-Requested-With':'c3-adblock','Authorization':'Basic '+token}
+});
+if(!r.ok)throw Error(t('login_err_invalid'));
+const data=await r.json();
+authToken=token;
+authUser=data.user||u;
+const store=$('rememberMe').checked?localStorage:sessionStorage;
+store.setItem('c3_auth',token);
+store.setItem('c3_user',authUser);
+$('loginPass').value='';
+showDash();
+}catch(err){
+$('loginError').textContent=err.message||t('login_err_invalid');
+$('loginError').style.display='block';
+}finally{
+btn.disabled=false;
+btn.textContent=t('login_btn');
+}
+};
+
+// Navigation & ScrollSpy
+const navLinks=document.querySelectorAll('#navMenu a');
+const sectionIds=['overview','dnshost','dnsguide','queries','clients','filters','network','maintenance'];
+function setActiveNav(id){
+navLinks.forEach(a=>{
+const isMatch=a.dataset.nav===id;
+a.classList.toggle('active',isMatch);
+if(isMatch&&window.innerWidth<=680){
+a.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+}
+});
+}
+
+navLinks.forEach(a=>{
+a.onclick=e=>{
+e.preventDefault();
+const targetId=a.dataset.nav;
+const el=$(targetId);
+if(el){
+el.scrollIntoView({behavior:'smooth'});
+setActiveNav(targetId);
+history.replaceState(null,null,'#'+targetId);
+}
+};
+});
+
+if(window.IntersectionObserver){
+const spy=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+setActiveNav(entry.target.id);
+}
+});
+},{rootMargin:'-15% 0px -70% 0px',threshold:0});
+sectionIds.forEach(id=>{const el=$(id);if(el)spy.observe(el)});
+}
+
+let lastStats=null;
+function renderStats(s){
+lastStats=s;
+const ip=s.ip||'—';
+$('sideIp').textContent=ip;
+$('dnsIpDisplay').textContent=ip;
+document.querySelectorAll('.dyn-dns-ip').forEach(el=>el.textContent=ip);
+if(s.upstream)$('upstreamDisplay').textContent=s.upstream+' (Quad9)';
+if(s.hostname){
+$('currHostName').textContent=s.hostname;
+$('currHostLink').href='http://'+s.hostname+'.local';
+if(document.activeElement!==$('hostnameInput'))$('hostnameInput').value=s.hostname;
+}
+$('liveText').textContent=t('live_active');
+$('liveDot').style.background='#27a77e';
+$('credwarn').hidden=!s.defcreds;
+
+const on=s.blocking!==false;
+$('blockbar').classList.toggle('paused',!on);
+$('blockIcon').textContent=on?'✓':'Ⅱ';
+$('blockstate').textContent=on?t('hero_blocking'):t('hero_paused');
+$('blockdetail').textContent=on?t('hero_blocking_desc'):(s.resumeIn>0?t('hero_paused_resume',{s:s.resumeIn}):t('hero_paused_manual'));
+$('pausebtn').textContent=on?t('btn_pause'):t('btn_resume');
+$('pausedur').hidden=!on;
+
+$('sys').innerHTML=[
+[t('stat_blocked'),fmt(s.blocked),'red'],
+[t('stat_allowed'),fmt(s.allowed),'green'],
+[t('stat_blocklist'),t('stat_domains',{n:fmt(s.domains)}),''],
+[t('stat_clients'),s.clients.length,''],
+[t('stat_wifi'),fmt(s.rssi)+' dBm',''],
+[t('stat_temp'),s.temp+' °C',''],
+[t('stat_ram'),Math.round(s.heap/1024)+' KB',''],
+[t('stat_uptime'),s.uptime,'']
+].map(c=>`<div class=stat><div class=stat-name>${c[0]}</div><div class="stat-value ${c[2]}">${c[1]}</div></div>`).join('');
+
+if(s.queries&&s.queries.length){
+$('queryRows').innerHTML=s.queries.map(q=>`<tr><td class=domain>${esc(q.domain)}</td><td>${esc(q.ip)}</td><td><span class="badge ${q.blocked?'blocked':'allowed'}">${q.blocked?t('badge_blocked'):t('badge_allowed')}</span></td><td class=muted>${q.age<2?t('time_just_now'):t('time_ago',{s:q.age})}</td></tr>`).join('');
+}else{
+emptyRow($('queryRows'),4,t('empty_queries'));
+}
+
+if(s.clients&&s.clients.length){
+$('clientRows').innerHTML=s.clients.sort((a,b)=>(b.blocked+b.allowed)-(a.blocked+a.allowed)).map(c=>`<tr><td>${esc(c.ip)}${c.banned?` <span class="badge blocked">${t('badge_banned')}</span>`:''}</td><td class=muted>${esc(c.mac)}</td><td class=red>${fmt(c.blocked)}</td><td class=green>${fmt(c.allowed)}</td><td><button class=ban data-ip="${esc(c.ip)}">${c.banned?t('btn_unban'):t('btn_ban')}</button></td></tr>`).join('');
+}else{
+emptyRow($('clientRows'),5,t('empty_clients'));
+}
+
+if(s.custom&&s.custom.length){
+$('customRows').innerHTML=s.custom.map(d=>`<tr><td class=domain>${esc(d)}</td><td style="text-align:right"><button class=remove data-domain="${esc(d)}">${t('btn_remove')}</button></td></tr>`).join('');
+}else{
+emptyRow($('customRows'),2,t('empty_filters'));
+}
+
+if(document.activeElement!==$('updateUrl'))$('updateUrl').value=s.upurl||'';
+if(document.activeElement!==$('updateInterval'))$('updateInterval').value=s.upiv||24;
+$('updateStatus').textContent=s.upstat||'—';
+}
+
+async function load(){
+try{
+const s=await(await fetch('/stats.json')).json();
+renderStats(s);
+}catch(e){
+$('liveText').textContent=t('live_lost');
+$('liveDot').style.background='#cc4c50';
+console.warn('Dashboard refresh failed:',e);
+}
+}
+
+async function togglePause(){
+try{
+const on=$('pausebtn').textContent===t('btn_pause');
+await request(on?'/pause?s='+$('pausedur').value:'/resume');
+await load();
+}catch(e){
+$('blockdetail').textContent=e.message;
+}
+}
+
+$('pausebtn').onclick=togglePause;
+$('refreshBtn').onclick=load;
+
+$('copyIpBtn').onclick=()=>{
+const ip=$('dnsIpDisplay').textContent;
+if(!ip||ip==='—')return;
+navigator.clipboard.writeText(ip).then(()=>{
+const btn=$('copyIpBtn');
+btn.textContent=t('copied_ip');
+btn.classList.add('copied');
+setTimeout(()=>{
+btn.textContent=t('btn_copy_ip');
+btn.classList.remove('copied');
+},2000);
+});
+};
+
+$('hostnameForm').onsubmit=async e=>{
+e.preventDefault();
+const h=$('hostnameInput').value.trim();
+if(!h||!/^[a-zA-Z0-9-]{2,32}$/.test(h)){
+$('hostnameMsg').textContent=t('host_invalid');
+$('hostnameMsg').style.color='var(--red)';
+return;
+}
+$('hostnameMsg').textContent=t('host_saving');
+$('hostnameMsg').style.color='var(--muted)';
+try{
+await request('/sethostname?h='+encodeURIComponent(h));
+$('hostnameMsg').textContent=t('host_saved');
+$('hostnameMsg').style.color='var(--green)';
+$('currHostName').textContent=h;
+$('currHostLink').href='http://'+h+'.local';
+await load();
+}catch(err){
+$('hostnameMsg').textContent=err.message||t('host_invalid');
+$('hostnameMsg').style.color='var(--red)';
+}
+};
+
+$('guideTabs').onclick=e=>{
+const b=e.target.closest('.guide-tab');
+if(!b||!b.dataset.tab)return;
+document.querySelectorAll('.guide-tab').forEach(t=>t.classList.toggle('active',t===b));
+document.querySelectorAll('.guide-content').forEach(c=>{
+c.style.display=(c.id==='guideContent_'+b.dataset.tab)?'block':'none';
+});
+};
+
+$('domainForm').onsubmit=async e=>{
+e.preventDefault();
+const d=$('domainInput').value.trim();
+if(!d)return;
+$('domainMsg').textContent=t('msg_saving');
+try{
+await request('/addblock?d='+encodeURIComponent(d));
+$('domainInput').value='';
+$('domainMsg').textContent=t('msg_added');
+await load();
+}catch(err){
+$('domainMsg').textContent=err.message;
+}
+};
+
+$('clientRows').onclick=async e=>{
+const b=e.target.closest('.ban');
+if(!b)return;
+try{
+await request('/ban?ip='+encodeURIComponent(b.dataset.ip));
+await load();
+}catch(err){
+b.textContent=err.message;
+}
+};
+
+$('customRows').onclick=async e=>{
+const b=e.target.closest('.remove');
+if(!b)return;
+try{
+await request('/unblock?d='+encodeURIComponent(b.dataset.domain));
+await load();
+}catch(err){
+b.textContent=err.message;
+}
+};
+
+$('scanBtn').onclick=async()=>{
+const b=$('scanBtn');
+b.disabled=true;
+$('scanMsg').textContent=t('btn_scanning');
+emptyRow($('wifiRows'),4,t('wifi_searching'));
+try{
+await request('/wifi-scan',{method:'POST'});
+for(let i=0;i<30;i++){
+await new Promise(r=>setTimeout(r,1000));
+const s=await(await request('/wifi-scan')).json();
+if(s.status==='done'){
+if(s.networks&&s.networks.length){
+$('wifiRows').innerHTML=s.networks.map(n=>{
+const p=Math.max(4,Math.min(100,(n.rssi+100)*2));
+return `<tr><td class=network-name>${esc(n.ssid)}</td><td><span class=signal><i style="width:${p}%"></i></span>${n.rssi} dBm</td><td>${p}%</td><td><span class=badge>${n.secure?t('badge_secured'):t('badge_open')}</span></td></tr>`;
+}).join('');
+}else{
+emptyRow($('wifiRows'),4,t('wifi_none'));
+}
+$('scanMsg').textContent=t('wifi_found',{n:s.networks.length});
+return;
+}
+if(s.status==='error')throw Error(t('wifi_failed'));
+}
+throw Error(t('wifi_timeout'));
+}catch(err){
+$('scanMsg').textContent=err.message;
+emptyRow($('wifiRows'),4,t('wifi_error'));
+}finally{
+b.disabled=false;
+}
+};
+
+$('forgetBtn').onclick=async()=>{
+if(!confirm(t('confirm_forget')))return;
+$('wifiMsg').textContent=t('msg_rebooting');
+try{
+const r=await request('/forgetwifi');
+$('wifiMsg').textContent=await r.text();
+}catch(e){
+$('wifiMsg').textContent=e.message;
+}
+};
+
+$('saveUpdate').onclick=async()=>{
+const u=encodeURIComponent($('updateUrl').value.trim()),h=Math.max(1,parseInt($('updateInterval').value)||24);
+$('updateMsg').textContent=t('msg_saving');
+try{
+await request('/setupdate?u='+u+'&h='+h);
+$('updateMsg').textContent=t('msg_saved');
+await load();
+}catch(e){
+$('updateMsg').textContent=e.message;
+}
+};
+
+$('fetchUpdate').onclick=async()=>{
+$('updateMsg').textContent=t('msg_downloading');
+try{
+const r=await request('/fetchnow');
+$('updateMsg').textContent=await r.text();
+await load();
+}catch(e){
+$('updateMsg').textContent=e.message;
+}
+};
+
+async function upload(form,fileId,url,msgId,successKey){
+$(form).onsubmit=async e=>{
+e.preventDefault();
+const f=$(fileId).files[0];
+if(!f)return;
+$(msgId).textContent=t('uploading_file',{size:(f.size/1048576).toFixed(2)});
+const fd=new FormData();
+fd.append('f',f);
+try{
+const r=await request(url,{method:'POST',body:fd});
+$(msgId).textContent=t(successKey)||await r.text();
+setTimeout(load,700);
+}catch(err){
+$(msgId).textContent=err.message;
+}
+$(fileId).value='';
+};
+}
+
+upload('blocklistForm','blocklistFile','/upload','blocklistMsg','list_updated');
+upload('firmwareForm','firmwareFile','/update','firmwareMsg','fw_rebooting');
+
+applyLang(currentLang);
+if(authToken){
+showDash();
+}else{
+showLogin();
+}
+setInterval(()=>{if($('dashView').style.display!=='none')load()},4000);
+</script></body></html>
