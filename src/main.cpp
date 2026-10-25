@@ -611,21 +611,62 @@ static bool hasCreds() {
   prefs.begin("wifi", true); bool nvs = prefs.getString("ssid", "").length() > 0; prefs.end();
   return nvs || (WIFI_SSID && *WIFI_SSID && strcmp(WIFI_SSID, "YOUR_WIFI_SSID") != 0);
 }
+
 static bool connectWiFi() {
   prefs.begin("wifi", true);
   String ss = prefs.getString("ssid", "");
   String pw = prefs.getString("pass", "");
   prefs.end();
+
   const char* ssid = ss.length() ? ss.c_str() : WIFI_SSID;
   const char* pass = ss.length() ? pw.c_str() : WIFI_PASS;
-  if (!ssid || !*ssid || strcmp(ssid, "YOUR_WIFI_SSID") == 0) return false;  // unconfigured
-  Serial.printf("WiFi: connecting to \"%s\"%s\n", ssid, ss.length() ? " (provisioned)" : " (secrets.h)");
-  WiFi.mode(WIFI_STA); WiFi.setSleep(false); WiFi.begin(ssid, pass);
-  uint32_t t0 = millis();
-  while (WiFi.status() != WL_CONNECTED && millis() - t0 < 30000) { delay(250); Serial.print("."); }
+
+  if (!ssid || !*ssid || strcmp(ssid, "YOUR_WIFI_SSID") == 0) {
+    Serial.println("[WiFi] No SSID configured");
+    return false;
+  }
+
+  Serial.printf("[WiFi] SSID: \"%s\"\n", ssid);
+  Serial.printf("[WiFi] Credential source: %s\n",
+                ss.length() ? "NVS portal" : "secrets.h");
+
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
+  WiFi.setAutoReconnect(true);
+  WiFi.disconnect(false, false);
+  delay(300);
+  WiFi.begin(ssid, pass);
+
+  uint32_t start = millis();
+  wl_status_t lastStatus = (wl_status_t)255;
+
+  while (millis() - start < 30000UL) {
+    wl_status_t status = WiFi.status();
+
+    if (status != lastStatus) {
+      lastStatus = status;
+      Serial.printf("[WiFi] Status: %d\n", (int)status);
+    }
+
+    if (status == WL_CONNECTED) {
+      Serial.printf("[WiFi] Connected, IP: %s\n",
+                    WiFi.localIP().toString().c_str());
+      Serial.printf("[WiFi] RSSI: %d dBm\n", WiFi.RSSI());
+      return true;
+    }
+
+    delay(250);
+    Serial.print(".");
+  }
+
   Serial.println();
+  Serial.println();
+  Serial.printf("[WiFi] Connection timeout; final status=%d\n",
+                (int)WiFi.status());
+
   return WiFi.status() == WL_CONNECTED;
 }
+
 
 static void handlePortalRoot() {
   String html =
@@ -703,6 +744,12 @@ void setup() {
       Serial.println("[setup] BOOT held -> cleared saved WiFi"); } }
 
   if (!connectWiFi()) startConfigPortal();   // portal blocks + reboots on save; returns only when connected
+  WiFi.onEvent([](arduino_event_id_t event, arduino_event_info_t info) {
+    if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+      Serial.printf("[WiFi] Disconnect reason code=%d\n",
+                    (int)info.wifi_sta_disconnected.reason);
+    }
+  });
   Serial.printf("WiFi up: %s\n", WiFi.localIP().toString().c_str());
   if (MDNS.begin(deviceHostname.c_str())) { MDNS.addService("http", "tcp", 80); Serial.printf("dashboard: http://%s.local\n", deviceHostname.c_str()); }
 
